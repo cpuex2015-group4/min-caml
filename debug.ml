@@ -31,7 +31,7 @@ let rec print_syntax' expr nest =
   | LetRec({ name = xt; args = yts; body = e1}, e2) -> (
       let id, t = xt in
       printf "LETREC %s( " id;
-      List.map (fun p -> let (id, t) = p in printf "%s " id) yts;
+      List.iter (fun p -> let (id, t) = p in printf "%s " id) yts;
       print_string ")\n";
       print_syntax' e1 (nest+1);
       print_syntax' e2 (nest+1))
@@ -39,11 +39,11 @@ let rec print_syntax' expr nest =
     match e with
     | Var(f) -> printf "APP %s\n" f
     | _ -> print_syntax' e (nest+1)
-  ); List.map (fun e -> print_syntax' e (nest+1)) es; ()
-  | Tuple(es) -> printf "TUPLE\n"; List.map (fun e -> print_syntax' e (nest+1)) es; ()
+  ); List.iter (fun e -> print_syntax' e (nest+1)) es
+  | Tuple(es) -> printf "TUPLE\n"; List.iter (fun e -> print_syntax' e (nest+1)) es
   | LetTuple(xts, e1, e2) -> (
     printf "LETTUPLE ( ";
-    List.map (fun p -> let (id, t) = p in printf "%s " id) xts;
+    List.iter (fun p -> let (id, t) = p in printf "%s " id) xts;
     print_string ")\n";
     print_syntax' e1 (nest+1); print_syntax' e2 (nest+1))
   | Array(e1, e2) -> printf "ARRAY\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
@@ -88,21 +88,21 @@ let rec print_knormal' expr nest =
   | Var(x) -> printf "VAR %s\n" x
   | LetRec({ name = (x, t); args = yts; body = e1 }, e2) -> (
     printf "LETREC %s( " x;
-    List.map (fun p -> let (id, t) = p in printf "%s " id) yts;
+    List.iter (fun p -> let (id, t) = p in printf "%s " id) yts;
     print_string ")\n";
     print_knormal' e1 (nest+1);
     print_knormal' e2 (nest+1))
   | App(x, ys) -> (
     printf "APP %s ( " x;
-    List.map (fun y -> printf "%s " y) ys;
+    List.iter (fun y -> printf "%s " y) ys;
     print_string ")\n")
   | Tuple(xs) -> 
       print_string "TUPLE ( ";
-    List.map (fun x -> printf "%s " x) xs;
+    List.iter (fun x -> printf "%s " x) xs;
     print_string ")"
   | LetTuple(xts, y, e) -> (
     print_string "LETTUPLE ( ";
-    List.map (fun p -> let (id, t) = p in printf "%s " id) xts;
+    List.iter (fun p -> let (id, t) = p in printf "%s " id) xts;
     printf ") %s" y;
     print_knormal' e (nest+1))
   | Get(x, y) -> printf "GET %s %s\n" x y
@@ -110,7 +110,7 @@ let rec print_knormal' expr nest =
   | ExtArray(x) -> printf "EXTARRAY %s\n" x
   | ExtFunApp(x, ys) -> (
     printf "EXTFUNAPP %s ( " x;
-    List.map (fun x -> printf "%s " x) ys;
+    List.iter (fun x -> printf "%s " x) ys;
     print_string ")\n")
 in print_knormal' e 0
 
