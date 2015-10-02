@@ -49,13 +49,18 @@ let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file
     close_out outchan;
   with e -> (close_in inchan; close_out outchan; raise e)
 
+let debug_spec s = (* デバッグ関数を選択する *)
+  match s with
+  | "parser" -> debug_parser
+  | "knormal" -> debug_knormal
+  (* TODO: exhaust match case *)
+
 let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   let files = ref [] in
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
-     ("-parse", Arg.Unit(fun () -> spec := debug_parser), "debug print for the result of parser");
-     ("-knormal", Arg.Unit(fun () -> spec := debug_knormal), "debug print for the result of kNormalization")]
+     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal]")]
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^
      Printf.sprintf "usage: %s [-inline m] [-iter n] ...filenames without \".ml\"..." Sys.argv.(0));
