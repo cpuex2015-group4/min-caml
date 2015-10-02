@@ -1,3 +1,6 @@
+open Printf
+open Exception
+
 let limit = ref 1000
 
 let rec iter n e = (* 最適化処理をくりかえす (caml2html: main_iter) *)
@@ -55,6 +58,7 @@ let debug_spec s = (* デバッグ関数を選択する *)
 
 let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   let files = ref [] in
+  let processing_file = ref "" in
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
@@ -62,6 +66,9 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^
      Printf.sprintf "usage: %s [-inline m] [-iter n] ...filenames without \".ml\"..." Sys.argv.(0));
-  List.iter
-    (fun f -> ignore (file f))
-    !files
+  try
+    List.iter (fun f -> processing_file := f; ignore (file f)) !files; ()
+  with
+    Lexing_failure (line, i, j, msg) ->
+      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
+      !processing_file line i j msg

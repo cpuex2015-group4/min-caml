@@ -2,6 +2,7 @@
 (* lexerが利用する変数、関数、型などの定義 *)
 open Parser
 open Type
+open Exception
 }
 
 (* 正規表現の略記 *)
@@ -83,11 +84,13 @@ rule token = parse
 | lower (digit|lower|upper|'_')* (* 他の「予約語」より後でないといけない *)
     { IDENT(Lexing.lexeme lexbuf) }
 | _
-    { failwith
-	(Printf.sprintf "unknown token %s near characters %d-%d"
-	   (Lexing.lexeme lexbuf)
-	   (Lexing.lexeme_start lexbuf)
-	   (Lexing.lexeme_end lexbuf)) }
+    { let pos = Lexing.lexeme_start_p lexbuf in
+      let (lnum, bol) = Exception.curr_pos_info lexbuf in
+      raise (Lexing_failure (
+        lnum,
+        (Lexing.lexeme_start lexbuf) - bol,
+        (Lexing.lexeme_end lexbuf) - bol,
+      	(Printf.sprintf "unknown token `%s`" (Lexing.lexeme lexbuf)))) }
 and comment = parse
 | "*)"
     { () }
