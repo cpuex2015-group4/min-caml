@@ -23,13 +23,11 @@ let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2htm
 
 let debug_parser outchan l = (* パーサの結果をデバッグ出力する (caml2html: debug_parser) *)
   Id.counter := 0;
-  Typing.extenv := M.empty;
 	(Debug.parse
 		(Parser.exp Lexer.token l))
 
 let debug_knormal outchan l = (* K正規化の結果をデバッグ出力する (caml2html: debug_knormal) *)
   Id.counter := 0;
-  Typing.extenv := M.empty;
 	(Debug.knormal
 		 (KNormal.f
 			 (Typing.f
