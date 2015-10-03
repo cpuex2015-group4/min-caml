@@ -45,7 +45,10 @@ let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file
   let inchan = open_in (f ^ ".ml") in
   let outchan = open_out (f ^ ".s") in
   try
-    !spec outchan (Lexing.from_channel inchan);
+    let lexbuf = (Lexing.from_channel inchan) in
+    (* エラー出力用に入力ファイルの内容をバッファに保存する *)
+    Exception.buffer := lexbuf.lex_buffer;
+    !spec outchan lexbuf;
     close_in inchan;
     close_out outchan;
   with e -> (close_in inchan; close_out outchan; raise e)
@@ -58,6 +61,7 @@ let debug_spec s = (* デバッグ関数を選択する *)
 
 let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   let files = ref [] in
+  (* エラー出力用に入力ファイル名を保存する *)
   let processing_file = ref "" in
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
@@ -69,6 +73,15 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   try
     List.iter (fun f -> processing_file := f; ignore (file f)) !files; ()
   with
+  (* 例外を捕捉してエラー出力を行う *)
     Lexing_failure (line, i, j, msg) ->
       printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
       !processing_file line i j msg
+  | Parsing_failure (line, i, j, msg) ->
+      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
+      !processing_file line i j msg
+  | Typing_failure (line, i, j, msg) ->
+      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
+      !processing_file line i j msg
+  | Failure (msg) ->
+      printf "File \"%s.ml\":\nError: %s" !processing_file msg

@@ -1,6 +1,7 @@
 %{
 (* parserが利用する変数、関数、型などの定義 *)
 open Syntax
+open Exception
 let addtyp x = (x, Type.gentyp ())
 %}
 
@@ -134,10 +135,14 @@ exp: /* (* 一般の式 (caml2html: parser_exp) *) */
     %prec prec_app
     { Array($2, $3) }
 | error
-    { failwith
-	(Printf.sprintf "parse error near characters %d-%d"
-	   (Parsing.symbol_start ())
-	   (Parsing.symbol_end ())) }
+    { let start_p = Parsing.symbol_start () in
+      let end_p = Parsing.symbol_end () in
+      let (lnum, bol) = Exception.curr_pos_info start_p in
+      let token = Bytes.sub_string !Exception.buffer start_p (end_p - start_p)
+      in
+      raise (Parsing_failure (
+        lnum, start_p - bol, end_p - bol,
+      	(Printf.sprintf "parse error near `%s`" token))) }
 
 fundef:
 | IDENT formal_args EQUAL exp
