@@ -84,7 +84,7 @@ rule token = parse
 | lower (digit|lower|upper|'_')* (* 他の「予約語」より後でないといけない *)
     { IDENT(Lexing.lexeme lexbuf) }
 | _
-    { let (lnum, bol) = Exception.curr_pos_info lexbuf.lex_curr_pos in
+    { let (lnum, bol) = Exception.curr_pos_info Lexing.(lexbuf.lex_curr_pos) in
       raise (Lexing_failure (
         lnum,
         (Lexing.lexeme_start lexbuf) - bol,

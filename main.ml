@@ -47,7 +47,7 @@ let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file
   try
     let lexbuf = (Lexing.from_channel inchan) in
     (* エラー出力用に入力ファイルの内容をバッファに保存する *)
-    Exception.buffer := lexbuf.lex_buffer;
+    Exception.buffer := Lexing.(lexbuf.lex_buffer);
     !spec outchan lexbuf;
     close_in inchan;
     close_out outchan;

@@ -20,7 +20,9 @@ let curr_pos_info pos =
   try
     let bol = Bytes.rindex_from !buffer (pos-1) '\n' in
     (lnum, bol)
-  with Not_found -> (lnum, 0)
+  with
+  | Not_found -> (lnum, 0)
+  | Invalid_argument _ -> (lnum, (Bytes.length !buffer))
 
 (* 行番号, 開始位置, 終了位置, メッセージ *)
 exception Lexing_failure of int * int * int * string
