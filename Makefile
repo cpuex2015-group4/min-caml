@@ -38,6 +38,13 @@ do_test: $(TESTS:%=test/%.cmp)
 .PRECIOUS: test/%.s test/% test/%.res test/%.ans test/%.cmp
 TRASH = $(TESTS:%=test/%.s) $(TESTS:%=test/%) $(TESTS:%=test/%.res) $(TESTS:%=test/%.ans) $(TESTS:%=test/%.cmp)
 
+# using min-caml, compile all ml sources in test directory
+asm: $(RESULT) $(TESTS:%=test/%.ml)
+	@SRC="$(TESTS:%=test/%)"; \
+	for x in $$SRC; do \
+		./$(RESULT) $$x; \
+	done
+
 test/%.s: $(RESULT) test/%.ml
 	./$(RESULT) test/$*
 test/%: test/%.s libmincaml.S stub.c
