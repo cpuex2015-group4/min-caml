@@ -1,6 +1,7 @@
 open Printf
 open Syntax
 open KNormal
+open Asm
 
 let rec print_indent n =
   if n > 0 then (print_string "| "; print_indent (n-1)) else ()
@@ -113,6 +114,52 @@ let rec print_knormal' expr nest =
     List.iter (fun x -> printf "%s " x) ys;
     print_string ")\n")
 in print_knormal' e 0
+
+let print_asmprog prog =
+  let print_data d =
+    List.iter (fun (Id.L(id), v) -> printf "\t%10s -> %f\n" id v) d in
+  let rec print_exp = function
+    | Asm.Nop -> printf "\tNOP\n"
+    | Asm.Set(i) -> printf "\tSET\n"
+    | Asm.SetL(x) -> printf "\tSETL\n"
+    | Asm.Mov(x) -> printf "\tMOV\n"
+    | Asm.Neg(x) -> printf "\tNEG\n"
+    | Asm.Add(x, v) -> printf "\tADD\n"
+    | Asm.Sub(x, v) -> printf "\tSUB\n"
+    | Asm.Ld(x, v) -> printf "\tLD\n"
+    | Asm.St(x, y, v) -> printf "\tST\n"
+    | Asm.FMovD(x) -> printf "\tFMOV\n"
+    | Asm.FNegD(x) -> printf "\tFNEG\n"
+    | Asm.FAddD(x, y) -> printf "\tFADD\n"
+    | Asm.FSubD(x, y) -> printf "\tFSUB\n"
+    | Asm.FMulD(x, y) -> printf "\tFMUL\n"
+    | Asm.FDivD(x, y) -> printf "\tFDIV\n"
+    | Asm.LdDF(x, v) -> printf "\tLDDF\n"
+    | Asm.StDF(x, y, v) -> printf "\tSTDF\n"
+    | Asm.Comment(s) -> printf "\t# %s\n" s
+    (* virtual instructions *)
+    | Asm.IfEq(x, v, e1, e2) -> printf "\tIFEQ\n"; print_cmd e1; print_cmd e2
+    | Asm.IfLE(x, v, e1, e2) -> printf "\tIFLE\n"; print_cmd e1; print_cmd e2
+    | Asm.IfGE(x, v, e1, e2) -> printf "\tIFGE\n"; print_cmd e1; print_cmd e2
+    | Asm.IfFEq(x, v, e1, e2) -> printf "\tIFFEQ\n"; print_cmd e1; print_cmd e2
+    | Asm.IfFLE(x, v, e1, e2) -> printf "\tIFFLE\n"; print_cmd e1; print_cmd e2
+    (* closure address, integer arguments, and float arguments *)
+    | Asm.CallCls(x, ys, zs) -> printf "\tCALLCLS\n"
+    | Asm.CallDir(x, ys, zs) -> printf "\tCALLDIR\n"
+    | Asm.Save(x, y) -> printf "\tSAVE\n"
+    | Asm.Restore(x) -> printf "\tRESTORE\n"
+  and print_cmd = function
+    | Asm.Ans(e) -> print_exp e
+    | Asm.Let((x, t), e, cmd) -> printf "\tLET %s\n" x; print_exp e; print_cmd cmd in
+  let print_fundef { name = Id.L(x); args = ys; fargs = zs; body = e; ret = t } =
+    printf "\tFUNDEF %s\n" x; print_cmd e in
+  let Asm.Prog(data, fs, cmd) = prog in
+  printf "[Data]\n";
+  print_data data;
+  printf "[FunDef]\n";
+  List.iter (fun fd -> print_fundef fd) fs;
+  printf "[Program]\n";
+  print_cmd cmd
 
 let parse e =
   print_syntax e
