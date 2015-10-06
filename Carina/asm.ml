@@ -10,16 +10,16 @@ and exp = (* 一つ一つの命令に対応する式 (caml2html: sparcasm_exp) *)
   | Neg of Id.t
   | Add of Id.t * id_or_imm
   | Sub of Id.t * id_or_imm
-  | Ld of Id.t * id_or_imm * int
-  | St of Id.t * Id.t * id_or_imm * int
+  | Ld of Id.t * id_or_imm
+  | St of Id.t * Id.t * id_or_imm
   | FMovD of Id.t
   | FNegD of Id.t
   | FAddD of Id.t * Id.t
   | FSubD of Id.t * Id.t
   | FMulD of Id.t * Id.t
   | FDivD of Id.t * Id.t
-  | LdDF of Id.t * id_or_imm * int
-  | StDF of Id.t * Id.t * id_or_imm * int
+  | LdDF of Id.t * id_or_imm
+  | StDF of Id.t * Id.t * id_or_imm
   | Comment of string
   (* virtual instructions *)
   | IfEq of Id.t * id_or_imm * t * t
@@ -50,8 +50,11 @@ let reg_sw = regs.(Array.length regs - 1) (* temporary for swap *)
 let reg_fsw = fregs.(Array.length fregs - 1) (* temporary for swap *)
 *)
 let reg_sp = "$sp" (* stack pointer *)
+let reg_fp = "$fp" (* frame pointer *)
 let reg_hp = "min_caml_hp" (* heap pointer (caml2html: sparcasm_reghp) *)
-(* let reg_ra = "$ra" (* return address *) *)
+let reg_tmp = "$at" (* assembler template *)
+let reg_ra = "$ra" (* return address *)
+let reg_rv = "$v0" (* return value *)
 let is_reg x = (x.[0] = '%' || x = reg_hp)
 
 (* super-tenuki *)
@@ -65,8 +68,8 @@ let fv_id_or_imm = function V(x) -> [x] | _ -> []
 let rec fv_exp = function
   | Nop | Set(_) | SetL(_) | Comment(_) | Restore(_) -> []
   | Mov(x) | Neg(x) | FMovD(x) | FNegD(x) | Save(x, _) -> [x]
-  | Add(x, y') | Sub(x, y') | Ld(x, y', _) | LdDF(x, y', _) -> x :: fv_id_or_imm y'
-  | St(x, y, z', _) | StDF(x, y, z', _) -> x :: y :: fv_id_or_imm z'
+  | Add(x, y') | Sub(x, y') | Ld(x, y') | LdDF(x, y') -> x :: fv_id_or_imm y'
+  | St(x, y, z') | StDF(x, y, z') -> x :: y :: fv_id_or_imm z'
   | FAddD(x, y) | FSubD(x, y) | FMulD(x, y) | FDivD(x, y) -> [x; y]
   | IfEq(x, y', e1, e2) | IfLE(x, y', e1, e2) | IfGE(x, y', e1, e2) -> x :: fv_id_or_imm y' @ remove_and_uniq S.empty (fv e1 @ fv e2) (* uniq here just for efficiency *)
   | IfFEq(x, y, e1, e2) | IfFLE(x, y, e1, e2) -> x :: y :: remove_and_uniq S.empty (fv e1 @ fv e2) (* uniq here just for efficiency *)
