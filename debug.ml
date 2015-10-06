@@ -120,34 +120,43 @@ let print_asmprog prog =
     List.iter (fun (Id.L(id), v) -> printf "\t%10s -> %f\n" id v) d in
   let rec print_exp = function
     | Asm.Nop -> printf "\tNOP\n"
-    | Asm.Set(i) -> printf "\tSET\n"
-    | Asm.SetL(x) -> printf "\tSETL\n"
-    | Asm.Mov(x) -> printf "\tMOV\n"
-    | Asm.Neg(x) -> printf "\tNEG\n"
-    | Asm.Add(x, v) -> printf "\tADD\n"
-    | Asm.Sub(x, v) -> printf "\tSUB\n"
-    | Asm.Ld(x, v) -> printf "\tLD\n"
-    | Asm.St(x, y, v) -> printf "\tST\n"
-    | Asm.FMovD(x) -> printf "\tFMOV\n"
-    | Asm.FNegD(x) -> printf "\tFNEG\n"
-    | Asm.FAddD(x, y) -> printf "\tFADD\n"
-    | Asm.FSubD(x, y) -> printf "\tFSUB\n"
-    | Asm.FMulD(x, y) -> printf "\tFMUL\n"
-    | Asm.FDivD(x, y) -> printf "\tFDIV\n"
-    | Asm.LdDF(x, v) -> printf "\tLDDF\n"
-    | Asm.StDF(x, y, v) -> printf "\tSTDF\n"
+    | Asm.Set(i) -> printf "\tSET %d\n" i
+    | Asm.SetL(Id.L(x)) -> printf "\tSETL %s\n" x
+    | Asm.Mov(x) -> printf "\tMOV %s\n" x
+    | Asm.Neg(x) -> printf "\tNEG %s\n" x
+    | Asm.Add(x, V(y)) -> printf "\tADD %s, %s\n" x y
+    | Asm.Add(x, C(i)) -> printf "\tADDI %s, %d\n" x i
+    | Asm.Sub(x, V(y)) -> printf "\tSUB %s, %s\n" x y
+    | Asm.Sub(x, C(i)) -> printf "\tSUBI %s, %d\n" x i
+    | Asm.Ld(x, V(y)) -> printf "\tLD (%s,%s)\n" x y
+    | Asm.Ld(x, C(i)) -> printf "\tLD %d(%s)\n" i x
+    | Asm.St(x, y, V(z)) -> printf "\tST %s, (%s,%s)\n" x y z
+    | Asm.St(x, y, C(i)) -> printf "\tST %s, %d(%s)\n" x i y
+    | Asm.FMovD(x) -> printf "\tFMOV %s\n" x
+    | Asm.FNegD(x) -> printf "\tFNEG %s\n" x
+    | Asm.FAddD(x, y) -> printf "\tFADD %s, %s\n" x y
+    | Asm.FSubD(x, y) -> printf "\tFSUB %s, %s\n" x y
+    | Asm.FMulD(x, y) -> printf "\tFMUL %s, %s\n" x y
+    | Asm.FDivD(x, y) -> printf "\tFDIV %s, %s\n" x y
+    | Asm.LdDF(x, V(y)) -> printf "\tLDDF (%s,%s)\n" x y
+    | Asm.LdDF(x, C(i)) -> printf "\tLDDF %d(%s)\n" i x
+    | Asm.StDF(x, y, V(z)) -> printf "\tSTDF %s, (%s,%s)\n" x y z
+    | Asm.StDF(x, y, C(i)) -> printf "\tSTDF %s, %d(%s)\n" x i y
     | Asm.Comment(s) -> printf "\t# %s\n" s
     (* virtual instructions *)
-    | Asm.IfEq(x, v, e1, e2) -> printf "\tIFEQ\n"; print_cmd e1; print_cmd e2
-    | Asm.IfLE(x, v, e1, e2) -> printf "\tIFLE\n"; print_cmd e1; print_cmd e2
-    | Asm.IfGE(x, v, e1, e2) -> printf "\tIFGE\n"; print_cmd e1; print_cmd e2
-    | Asm.IfFEq(x, v, e1, e2) -> printf "\tIFFEQ\n"; print_cmd e1; print_cmd e2
-    | Asm.IfFLE(x, v, e1, e2) -> printf "\tIFFLE\n"; print_cmd e1; print_cmd e2
+    | Asm.IfEq(x, V(y), e1, e2) -> printf "\tIFEQ %s, %s\n" x y; print_cmd e1; print_cmd e2
+    | Asm.IfEq(x, C(i), e1, e2) -> printf "\tIFEQ %s, %d\n" x i; print_cmd e1; print_cmd e2
+    | Asm.IfLE(x, V(y), e1, e2) -> printf "\tIFLE %s, %s\n" x y; print_cmd e1; print_cmd e2
+    | Asm.IfLE(x, C(i), e1, e2) -> printf "\tIFLE %s, %d\n" x i; print_cmd e1; print_cmd e2
+    | Asm.IfGE(x, V(y), e1, e2) -> printf "\tIFGE %s, %s\n" x y; print_cmd e1; print_cmd e2
+    | Asm.IfGE(x, C(i), e1, e2) -> printf "\tIFGE %s, %d\n" x i; print_cmd e1; print_cmd e2
+    | Asm.IfFEq(x, y, e1, e2) -> printf "\tIFFEQ %s, %s\n" x y; print_cmd e1; print_cmd e2
+    | Asm.IfFLE(x, y, e1, e2) -> printf "\tIFFLE %s, %s\n" x y; print_cmd e1; print_cmd e2
     (* closure address, integer arguments, and float arguments *)
     | Asm.CallCls(x, ys, zs) -> printf "\tCALLCLS\n"
     | Asm.CallDir(x, ys, zs) -> printf "\tCALLDIR\n"
-    | Asm.Save(x, y) -> printf "\tSAVE\n"
-    | Asm.Restore(x) -> printf "\tRESTORE\n"
+    | Asm.Save(x, y) -> printf "\tSAVE %s, %s\n" x y
+    | Asm.Restore(x) -> printf "\tRESTORE %s\n" x
   and print_cmd = function
     | Asm.Ans(e) -> print_exp e
     | Asm.Let((x, t), e, cmd) -> printf "\tLET %s\n" x; print_exp e; print_cmd cmd in
