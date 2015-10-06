@@ -203,7 +203,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(a), CallCls(x, ys, zs) ->
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
-      Printf.fprintf oc "\tst      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
+      Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
       Printf.fprintf oc "\tjal     *(%s)\n" reg_cl;
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (-ss);
@@ -215,7 +215,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(a), CallDir(Id.L(x), ys, zs) ->
       g'_args oc [] ys zs;
       let ss = stacksize () in
-      Printf.fprintf oc "\tst      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
+      Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
       Printf.fprintf oc "\tjal     %s\n" x;
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (-ss);
