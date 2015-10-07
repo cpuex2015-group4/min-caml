@@ -3,6 +3,8 @@ open Asm
 external gethi : float -> int32 = "gethi"
 external getlo : float -> int32 = "getlo"
 
+let debug_asm = ref false
+
 let stackset = ref S.empty (* すでにSaveされた変数の集合 (caml2html: emit_stackset) *)
 let stackmap = ref [] (* Saveされた変数の、スタックにおける位置 (caml2html: emit_stackmap) *)
 let save x =
@@ -273,30 +275,31 @@ let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
   stackmap := [];
   g oc (Tail, e)
 
-open Debug
-
 let f oc (Prog(data, fundefs, e)) =
-  Format.eprintf "generating assembly...@.";
-  Printf.fprintf oc ".data\n";
-  List.iter
+  if !debug_asm then
+    Debug.print_asmprog (Prog(data, fundefs, e))
+  else (
+    Format.eprintf "generating assembly...@.";
+    Printf.fprintf oc ".data\n";
+    List.iter
     (fun (Id.L(x), d) ->
       Printf.fprintf oc "%s:\t# %f\n" x d;
       Printf.fprintf oc "\t.long\t0x%lx\n" (gethi d);
       Printf.fprintf oc "\t.long\t0x%lx\n" (getlo d))
     data;
-  Printf.fprintf oc ".text\n";
-  Printf.fprintf oc "\t.globl  _min_caml_start\n";
-  List.iter (fun fundef -> h oc fundef) fundefs;
-  Printf.fprintf oc "_min_caml_start: # main entry point\n";
-  Printf.fprintf oc "\taddi    %s, %s, $-2\n" reg_sp;
-  Printf.fprintf oc "\tsw      %s, -1(%s)\n" reg_ra reg_sp;
-  Printf.fprintf oc "\tsw      %s, 0(%s)\n" reg_fp reg_sp;
-  Printf.fprintf oc "\t# main program start\n";
-  stackset := S.empty;
-  stackmap := [];
-  g oc (NonTail(reg_rv), e);
-  Printf.fprintf oc "\t# main program end\n";
-  Printf.fprintf oc "\tlw      %s, 0(%s)\n" reg_fp reg_sp;
-  Printf.fprintf oc "\tlw      %s, -1(%s)\n" reg_ra reg_sp;
-  Printf.fprintf oc "\taddi    %s, %s, $2\n" reg_sp reg_sp;
-  Printf.fprintf oc "\thlt\n"
+    Printf.fprintf oc ".text\n";
+    Printf.fprintf oc "\t.globl  _min_caml_start\n";
+    List.iter (fun fundef -> h oc fundef) fundefs;
+    Printf.fprintf oc "_min_caml_start: # main entry point\n";
+    Printf.fprintf oc "\taddi    %s, %s, $-2\n" reg_sp reg_sp;
+    Printf.fprintf oc "\tsw      %s, -1(%s)\n" reg_ra reg_sp;
+    Printf.fprintf oc "\tsw      %s, 0(%s)\n" reg_fp reg_sp;
+    Printf.fprintf oc "\t# main program start\n";
+    stackset := S.empty;
+    stackmap := [];
+    g oc (NonTail(reg_rv), e);
+    Printf.fprintf oc "\t# main program end\n";
+    Printf.fprintf oc "\tlw      %s, 0(%s)\n" reg_fp reg_sp;
+    Printf.fprintf oc "\tlw      %s, -1(%s)\n" reg_ra reg_sp;
+    Printf.fprintf oc "\taddi    %s, %s, $2\n" reg_sp reg_sp;
+    Printf.fprintf oc "\thlt\n")

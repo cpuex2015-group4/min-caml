@@ -57,6 +57,7 @@ let debug_spec s = (* デバッグ関数を選択する *)
   match s with
   | "parser" -> debug_parser
   | "knormal" -> debug_knormal
+  | "asm" -> Emit.debug_asm := true; lexbuf
   (* TODO: exhaust match case *)
 
 let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
@@ -66,7 +67,7 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
-     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal]")]
+     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, asm]")]
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^
      Printf.sprintf "usage: %s [-inline m] [-iter n] ...filenames without \".ml\"..." Sys.argv.(0));
