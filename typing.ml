@@ -24,8 +24,8 @@ let rec deref_typ = function (* 型変数を中身でおきかえる関数 (caml2html: typing_
   | t -> t
 let rec deref_id_typ (x, t) = (x, deref_typ t)
 let rec deref_term exp = 
-  let (e,token,line,start_p,end_p) = exp in
-  let syntax x = (x,token,line,start_p,end_p) in
+  let (e,(token,start_p,end_p)) = exp in
+  let syntax x = (x,(token,start_p,end_p)) in
   match e with
   | Not(e) -> syntax(Not(deref_term e))
   | Neg(e) -> syntax(Neg(deref_term e))
@@ -85,7 +85,7 @@ let rec unify t1 t2 = (* 型が合うように、型変数への代入をする (caml2html: typing
   | _, _ -> raise (Unify(t1, t2))
 
 let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
-  let (e,token,line,start_p,end_p) = exp in
+  let (e,(token,start_p,end_p)) = exp in
   try
     match e with
     | Unit -> Type.Unit
@@ -155,7 +155,7 @@ let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
 	Type.Unit
   with Unify(t1, t2) ->
     raise (Typing_failure(
-      line, start_p, end_p,
+      start_p, end_p,
       Printf.sprintf "This expression has type %s but an expression was expected of type %s"
         (Type.of_string t2) (Type.of_string t1)))
 

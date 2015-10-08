@@ -135,13 +135,14 @@ exp: /* (* ∞Ï»Ã§Œº∞ (caml2html: parser_exp) *) */
     %prec prec_app
     { info (Array($2, $3)) }
 | error
-    { let start_p = Parsing.symbol_start () in
-      let end_p = Parsing.symbol_end () in
-      let (lnum, bol) = Exception.curr_pos_info start_p in
-      let token = Bytes.sub_string !Exception.buffer start_p (end_p - start_p)
+    { let start_p = Parsing.symbol_start_pos () in
+      let end_p = Parsing.symbol_end_pos () in
+      let token = Bytes.sub_string !Exception.buffer
+        (Parsing.symbol_start ())
+        (Parsing.symbol_end () - Parsing.symbol_start ())
       in
       raise (Parsing_failure (
-        lnum, start_p - bol, end_p - bol,
+        start_p, end_p,
       	(Printf.sprintf "parse error near `%s`" token))) }
 
 fundef:
