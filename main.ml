@@ -23,17 +23,27 @@ let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2htm
 			 (Typing.f
 			    (Parser.exp Lexer.token l))))))))))
 
-let debug_parser outchan l = (* パーサの結果をデバッグ出力する (caml2html: debug_parser) *)
+let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   Id.counter := 0;
-	(Debug.parse
-		(Parser.exp Lexer.token l))
-
-let debug_knormal outchan l = (* K正規化の結果をデバッグ出力する (caml2html: debug_knormal) *)
-  Id.counter := 0;
-	(Debug.knormal
-		 (KNormal.f
-			 (Typing.f
-			    (Parser.exp Lexer.token l))))
+  Typing.extenv := M.empty;
+  let r1 = (Parser.exp Lexer.token l) in
+  if opt = "parser" then
+    Debug.parse r1
+  else
+    let r2 = (KNormal.f (Typing.f r1)) in
+    if opt = "knormal" then
+      Debug.knormal r2
+    else
+      let r3 = (Cse.f r2) in
+      if opt = "cse" then
+        Debug.cse r3
+      else
+        Emit.f outchan
+          (RegAlloc.f
+            (Simm.f
+          (Virtual.f
+                (Closure.f
+            (iter !limit (Alpha.f r3))))))
 
 let string s = lexbuf stdout (Lexing.from_string s) (* 文字列をコンパイルして標準出力に表示する (caml2html: main_string) *)
 
@@ -52,12 +62,6 @@ let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file
     close_out outchan;
   with e -> (close_in inchan; close_out outchan; raise e)
 
-let debug_spec s = (* デバッグ関数を選択する *)
-  match s with
-  | "parser" -> debug_parser
-  | "knormal" -> debug_knormal
-  (* TODO: exhaust match case *)
-
 let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   let files = ref [] in
   (* エラー出力用に入力ファイル名を保存する *)
@@ -65,7 +69,7 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
-     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal]")]
+     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, cse]")]
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^
      Printf.sprintf "usage: %s [-inline m] [-iter n] ...filenames without \".ml\"..." Sys.argv.(0));
