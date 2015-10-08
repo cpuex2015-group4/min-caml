@@ -1,9 +1,10 @@
 (* type inference/reconstruction *)
 
 open Syntax
+open Exception
 
 exception Unify of Type.t * Type.t
-exception Error of t * Type.t * Type.t
+exception Error
 
 let extenv = ref M.empty
 
@@ -22,32 +23,35 @@ let rec deref_typ = function (* 型変数を中身でおきかえる関数 (caml2html: typing_
       t'
   | t -> t
 let rec deref_id_typ (x, t) = (x, deref_typ t)
-let rec deref_term = function
-  | Not(e) -> Not(deref_term e)
-  | Neg(e) -> Neg(deref_term e)
-  | Add(e1, e2) -> Add(deref_term e1, deref_term e2)
-  | Sub(e1, e2) -> Sub(deref_term e1, deref_term e2)
-  | Eq(e1, e2) -> Eq(deref_term e1, deref_term e2)
-  | LE(e1, e2) -> LE(deref_term e1, deref_term e2)
-  | FNeg(e) -> FNeg(deref_term e)
-  | FAdd(e1, e2) -> FAdd(deref_term e1, deref_term e2)
-  | FSub(e1, e2) -> FSub(deref_term e1, deref_term e2)
-  | FMul(e1, e2) -> FMul(deref_term e1, deref_term e2)
-  | FDiv(e1, e2) -> FDiv(deref_term e1, deref_term e2)
-  | If(e1, e2, e3) -> If(deref_term e1, deref_term e2, deref_term e3)
-  | Let(xt, e1, e2) -> Let(deref_id_typ xt, deref_term e1, deref_term e2)
+let rec deref_term exp = 
+  let (e,(token,start_p,end_p)) = exp in
+  let syntax x = (x,(token,start_p,end_p)) in
+  match e with
+  | Not(e) -> syntax(Not(deref_term e))
+  | Neg(e) -> syntax(Neg(deref_term e))
+  | Add(e1, e2) -> syntax(Add(deref_term e1, deref_term e2))
+  | Sub(e1, e2) -> syntax(Sub(deref_term e1, deref_term e2))
+  | Eq(e1, e2) -> syntax(Eq(deref_term e1, deref_term e2))
+  | LE(e1, e2) -> syntax(LE(deref_term e1, deref_term e2))
+  | FNeg(e) -> syntax(FNeg(deref_term e))
+  | FAdd(e1, e2) -> syntax(FAdd(deref_term e1, deref_term e2))
+  | FSub(e1, e2) -> syntax(FSub(deref_term e1, deref_term e2))
+  | FMul(e1, e2) -> syntax(FMul(deref_term e1, deref_term e2))
+  | FDiv(e1, e2) -> syntax(FDiv(deref_term e1, deref_term e2))
+  | If(e1, e2, e3) -> syntax(If(deref_term e1, deref_term e2, deref_term e3))
+  | Let(xt, e1, e2) -> syntax(Let(deref_id_typ xt, deref_term e1, deref_term e2))
   | LetRec({ name = xt; args = yts; body = e1 }, e2) ->
-      LetRec({ name = deref_id_typ xt;
+      syntax(LetRec({ name = deref_id_typ xt;
 	       args = List.map deref_id_typ yts;
 	       body = deref_term e1 },
-	     deref_term e2)
-  | App(e, es) -> App(deref_term e, List.map deref_term es)
-  | Tuple(es) -> Tuple(List.map deref_term es)
-  | LetTuple(xts, e1, e2) -> LetTuple(List.map deref_id_typ xts, deref_term e1, deref_term e2)
-  | Array(e1, e2) -> Array(deref_term e1, deref_term e2)
-  | Get(e1, e2) -> Get(deref_term e1, deref_term e2)
-  | Put(e1, e2, e3) -> Put(deref_term e1, deref_term e2, deref_term e3)
-  | e -> e
+	     deref_term e2))
+  | App(e, es) -> syntax(App(deref_term e, List.map deref_term es))
+  | Tuple(es) -> syntax(Tuple(List.map deref_term es))
+  | LetTuple(xts, e1, e2) -> syntax(LetTuple(List.map deref_id_typ xts, deref_term e1, deref_term e2))
+  | Array(e1, e2) -> syntax(Array(deref_term e1, deref_term e2))
+  | Get(e1, e2) -> syntax(Get(deref_term e1, deref_term e2))
+  | Put(e1, e2, e3) -> syntax(Put(deref_term e1, deref_term e2, deref_term e3))
+  | e -> syntax(e)
 
 let rec occur r1 = function (* occur check (caml2html: typing_occur) *)
   | Type.Fun(t2s, t2) -> List.exists (occur r1) t2s || occur r1 t2
@@ -80,7 +84,8 @@ let rec unify t1 t2 = (* 型が合うように、型変数への代入をする (caml2html: typing
       r2 := Some(t1)
   | _, _ -> raise (Unify(t1, t2))
 
-let rec g env e = (* 型推論ルーチン (caml2html: typing_g) *)
+let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
+  let (e,(token,start_p,end_p)) = exp in
   try
     match e with
     | Unit -> Type.Unit
@@ -148,7 +153,11 @@ let rec g env e = (* 型推論ルーチン (caml2html: typing_g) *)
 	unify (Type.Array(t)) (g env e1);
 	unify Type.Int (g env e2);
 	Type.Unit
-  with Unify(t1, t2) -> raise (Error(deref_term e, deref_typ t1, deref_typ t2))
+  with Unify(t1, t2) ->
+    raise (Typing_failure(
+      start_p, end_p,
+      Printf.sprintf "This expression has type %s but an expression was expected of type %s"
+        (Type.of_string t2) (Type.of_string t1)))
 
 let f e =
   extenv := M.empty;

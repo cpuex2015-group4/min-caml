@@ -1,6 +1,7 @@
 %{
 (* parserが利用する変数、関数、型などの定義 *)
 open Syntax
+open Exception
 let addtyp x = (x, Type.gentyp ())
 %}
 
@@ -58,96 +59,101 @@ let addtyp x = (x, Type.gentyp ())
 
 simple_exp: /* (* 括弧をつけなくても関数の引数になれる式 (caml2html: parser_simple) *) */
 | LPAREN exp RPAREN
-    { $2 }
+    { info (syntax $2) }
 | LPAREN RPAREN
-    { Unit }
+    { info Unit }
 | BOOL
-    { Bool($1) }
+    { info (Bool($1)) }
 | INT
-    { Int($1) }
+    { info (Int($1)) }
 | FLOAT
-    { Float($1) }
+    { info (Float($1)) }
 | IDENT
-    { Var($1) }
+    { info (Var($1)) }
 | simple_exp DOT LPAREN exp RPAREN
-    { Get($1, $4) }
+    { info (Get($1, $4)) }
 
 exp: /* (* 一般の式 (caml2html: parser_exp) *) */
 | simple_exp
     { $1 }
 | NOT exp
     %prec prec_app
-    { Not($2) }
+    { info (Not($2)) }
 | MINUS exp
     %prec prec_unary_minus
-    { match $2 with
-    | Float(f) -> Float(-.f) (* -1.23などは型エラーではないので別扱い *)
-    | e -> Neg(e) }
+    { match syntax($2) with
+    | Float(f) -> info (Float(-.f)) (* -1.23などは型エラーではないので別扱い *)
+    | e -> info (Neg($2)) }
 | exp PLUS exp /* (* 足し算を構文解析するルール (caml2html: parser_add) *) */
-    { Add($1, $3) }
+    { info (Add($1, $3)) }
 | exp MINUS exp
-    { Sub($1, $3) }
+    { info (Sub($1, $3)) }
 | exp EQUAL exp
-    { Eq($1, $3) }
+    { info (Eq($1, $3)) }
 | exp LESS_GREATER exp
-    { Not(Eq($1, $3)) }
+    { info (Not(info(Eq($1, $3)))) }
 | exp LESS exp
-    { Not(LE($3, $1)) }
+    { info (Not(info(LE($3, $1)))) }
 | exp GREATER exp
-    { Not(LE($1, $3)) }
+    { info (Not(info(LE($1, $3)))) }
 | exp LESS_EQUAL exp
-    { LE($1, $3) }
+    { info (LE($1, $3)) }
 | exp GREATER_EQUAL exp
-    { LE($3, $1) }
+    { info (LE($3, $1)) }
 | IF exp THEN exp ELSE exp
     %prec prec_if
-    { If($2, $4, $6) }
+    { info (If($2, $4, $6)) }
 | MINUS_DOT exp
     %prec prec_unary_minus
-    { FNeg($2) }
+    { info (FNeg($2)) }
 | exp PLUS_DOT exp
-    { FAdd($1, $3) }
+    { info (FAdd($1, $3)) }
 | exp MINUS_DOT exp
-    { FSub($1, $3) }
+    { info (FSub($1, $3)) }
 | exp AST_DOT exp
-    { FMul($1, $3) }
+    { info (FMul($1, $3)) }
 | exp SLASH_DOT exp
-    { FDiv($1, $3) }
+    { info (FDiv($1, $3)) }
 | LET IDENT EQUAL exp IN exp
     %prec prec_let
-    { Let(addtyp $2, $4, $6) }
+    { info (Let(addtyp $2, $4, $6)) }
 | LET REC fundef IN exp
     %prec prec_let
-    { LetRec($3, $5) }
+    { info (LetRec($3, $5)) }
 | exp actual_args
     %prec prec_app
-    { App($1, $2) }
+    { info (App($1, $2)) }
 | elems
-    { Tuple($1) }
+    { info (Tuple($1)) }
 | LET LPAREN pat RPAREN EQUAL exp IN exp
-    { LetTuple($3, $6, $8) }
+    { info (LetTuple($3, $6, $8)) }
 | simple_exp DOT LPAREN exp RPAREN LESS_MINUS exp
-    { Put($1, $4, $7) }
+    { info (Put($1, $4, $7)) }
 | exp SEMICOLON exp
-    { Let((Id.gentmp Type.Unit, Type.Unit), $1, $3) }
+    { info (Let((Id.gentmp Type.Unit, Type.Unit), $1, $3)) }
 | ARRAY_CREATE simple_exp simple_exp
     %prec prec_app
-    { Array($2, $3) }
+    { info (Array($2, $3)) }
 | error
-    { failwith
-	(Printf.sprintf "parse error near characters %d-%d"
-	   (Parsing.symbol_start ())
-	   (Parsing.symbol_end ())) }
+    { let start_p = Parsing.symbol_start_pos () in
+      let end_p = Parsing.symbol_end_pos () in
+      let token = Bytes.sub_string !Exception.buffer
+        (Parsing.symbol_start ())
+        (Parsing.symbol_end () - Parsing.symbol_start ())
+      in
+      raise (Parsing_failure (
+        start_p, end_p,
+      	(Printf.sprintf "parse error near `%s`" token))) }
 
 fundef:
 | IDENT formal_args EQUAL exp
-    { { name = addtyp $1; args = $2; body = $4 } }
+    { { name = addtyp $1; args = syntax $2; body = $4 } }
 
 formal_args:
 | IDENT formal_args
-    { addtyp $1 :: $2 }
+    { info (addtyp $1 :: syntax $2) }
 | IDENT
-    { [addtyp $1] }
+    { info [addtyp $1] }
 
 actual_args:
 | actual_args simple_exp
@@ -159,12 +165,12 @@ actual_args:
 
 elems:
 | elems COMMA exp
-    { $1 @ [$3] }
+    { ($1 @ [$3]) }
 | exp COMMA exp
     { [$1; $3] }
 
 pat:
 | pat COMMA IDENT
-    { $1 @ [addtyp $3] }
+    { ($1 @ [addtyp $3]) }
 | IDENT COMMA IDENT
     { [addtyp $1; addtyp $3] }

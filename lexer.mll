@@ -2,10 +2,12 @@
 (* lexerが利用する変数、関数、型などの定義 *)
 open Parser
 open Type
+open Exception
 }
 
 (* 正規表現の略記 *)
-let space = [' ' '\t' '\n' '\r']
+let space = [' ' '\t']
+let newline = ['\n' '\r']
 let digit = ['0'-'9']
 let lower = ['a'-'z']
 let upper = ['A'-'Z']
@@ -13,6 +15,9 @@ let upper = ['A'-'Z']
 rule token = parse
 | space+
     { token lexbuf }
+| newline
+    { Lexing.new_line lexbuf;
+      token lexbuf }
 | "(*"
     { comment lexbuf; (* ネストしたコメントのためのトリック *)
       token lexbuf }
@@ -83,11 +88,10 @@ rule token = parse
 | lower (digit|lower|upper|'_')* (* 他の「予約語」より後でないといけない *)
     { IDENT(Lexing.lexeme lexbuf) }
 | _
-    { failwith
-	(Printf.sprintf "unknown token %s near characters %d-%d"
-	   (Lexing.lexeme lexbuf)
-	   (Lexing.lexeme_start lexbuf)
-	   (Lexing.lexeme_end lexbuf)) }
+    { raise (Lexing_failure (
+        Lexing.lexeme_start_p lexbuf,
+        Lexing.lexeme_end_p lexbuf,
+      	(Printf.sprintf "unknown token `%s`" (Lexing.lexeme lexbuf)))) }
 and comment = parse
 | "*)"
     { () }
