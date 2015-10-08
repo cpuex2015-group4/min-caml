@@ -19,10 +19,9 @@ let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2htm
 	  (Virtual.f
 	     (Closure.f
 		(iter !limit
-		   (Alpha.f
-		      (KNormal.f
+		   (Alpha.f (Cse.f (KNormal.f
 			 (Typing.f
-			    (Parser.exp Lexer.token l)))))))))
+			    (Parser.exp Lexer.token l))))))))))
 
 let debug_parser outchan l = (* パーサの結果をデバッグ出力する (caml2html: debug_parser) *)
   Id.counter := 0;
