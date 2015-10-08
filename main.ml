@@ -75,14 +75,12 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
     List.iter (fun f -> processing_file := f; ignore (file f)) !files; ()
   with
   (* 例外を捕捉してエラー出力を行う *)
-    Lexing_failure (line, i, j, msg) ->
+    Lexing_failure (i, j, msg)
+  | Parsing_failure (i, j, msg)
+  | Typing_failure (i, j, msg) ->
       printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
-      !processing_file line i j msg
-  | Parsing_failure (line, i, j, msg) ->
-      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
-      !processing_file line i j msg
-  | Typing_failure (line, i, j, msg) ->
-      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
-      !processing_file line i j msg
+      !processing_file Lexing.(i.pos_lnum)
+      (Lexing.(i.pos_cnum) - Lexing.(i.pos_bol))
+      (Lexing.(j.pos_cnum) - Lexing.(j.pos_bol)) msg
   | Failure (msg) ->
       printf "File \"%s.ml\":\nError: %s" !processing_file msg

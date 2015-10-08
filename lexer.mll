@@ -6,7 +6,8 @@ open Exception
 }
 
 (* 正規表現の略記 *)
-let space = [' ' '\t' '\n' '\r']
+let space = [' ' '\t']
+let newline = ['\n' '\r']
 let digit = ['0'-'9']
 let lower = ['a'-'z']
 let upper = ['A'-'Z']
@@ -14,6 +15,9 @@ let upper = ['A'-'Z']
 rule token = parse
 | space+
     { token lexbuf }
+| newline
+    { Lexing.new_line lexbuf;
+      token lexbuf }
 | "(*"
     { comment lexbuf; (* ネストしたコメントのためのトリック *)
       token lexbuf }
@@ -84,11 +88,9 @@ rule token = parse
 | lower (digit|lower|upper|'_')* (* 他の「予約語」より後でないといけない *)
     { IDENT(Lexing.lexeme lexbuf) }
 | _
-    { let (lnum, bol) = Exception.curr_pos_info Lexing.(lexbuf.lex_curr_pos) in
-      raise (Lexing_failure (
-        lnum,
-        (Lexing.lexeme_start lexbuf) - bol,
-        (Lexing.lexeme_end lexbuf) - bol,
+    { raise (Lexing_failure (
+        Lexing.lexeme_start_p lexbuf,
+        Lexing.lexeme_end_p lexbuf,
       	(Printf.sprintf "unknown token `%s`" (Lexing.lexeme lexbuf)))) }
 and comment = parse
 | "*)"
