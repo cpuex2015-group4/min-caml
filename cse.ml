@@ -6,7 +6,19 @@ let rec is_common_subexpr env e1 e2 =
   | Unit, Unit -> true
   | Int(i), Int(j) -> i = j
   | Float(f), Float(g) -> f = g
+  | Neg(x1), Neg(x2) -> is_same_expr env x1 x2
   | Add(x1, y1), Add(x2, y2) ->
+      (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
+  | Sub(x1, y1), Sub(x2, y2) ->
+      (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
+  | FNeg(x1), FNeg(x2) -> is_same_expr env x1 x2
+  | FAdd(x1, y1), FAdd(x2, y2) ->
+      (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
+  | FSub(x1, y1), FSub(x2, y2) ->
+      (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
+  | FMul(x1, y1), FMul(x2, y2) ->
+      (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
+  | FDiv(x1, y1), FDiv(x2, y2) ->
       (is_same_expr env x1 x2) && (is_same_expr env y1 y2)
   | Let((x1, t1), e11, e21), Let((x2, t2), e12, e22) ->
       if t1 = t2 && is_common_subexpr env e11 e12 then
@@ -44,8 +56,8 @@ let rec g env = function
   | FSub(x, y) -> FSub(x, y)
   | FMul(x, y) -> FMul(x, y)
   | FDiv(x, y) -> FDiv(x, y)
-  | IfEq(x, y, e1, e2) -> IfEq(x, y, e1, e2)
-  | IfLE(x, y, e1, e2) -> IfEq(x, y, e1, e2)
+  | IfEq(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
+  | IfLE(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
   | Let((x, t), e1, e2) -> (
       try
         (* Letで代入している式と同じ式が環境にないか探す *)
@@ -58,10 +70,10 @@ let rec g env = function
         Let((x, t), g env' e1, g env' e2))
   | Var(x) -> Var(x)
   | LetRec({ name = x; args = ys; body = e1 }, e2) ->
-      LetRec({ name = x; args = ys; body = e1 }, e2)
-  | App(e, es) -> App(e, es)
+      LetRec({ name = x; args = ys; body = g env e1 }, g env e2)
+  | App(x, xs) -> App(x, xs)
   | Tuple(xs) -> Tuple(xs)
-  | LetTuple(xs, x, e) -> LetTuple(xs, x, e)
+  | LetTuple(xs, x, e) -> LetTuple(xs, x, g env e)
   | Get(x, y) -> Get(x, y)
   | Put(x, y, z) -> Put(x, y, z)
   | ExtArray(x) -> ExtArray(x)
