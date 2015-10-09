@@ -27,23 +27,18 @@ let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   Id.counter := 0;
   Typing.extenv := M.empty;
   let r1 = (Parser.exp Lexer.token l) in
-  if opt = "parser" then
-    Debug.parse r1
-  else
-    let r2 = (KNormal.f (Typing.f r1)) in
-    if opt = "knormal" then
-      Debug.knormal r2
-    else
-      let r3 = (Cse.f r2) in
-      if opt = "cse" then
-        Debug.cse r3
-      else
-        Emit.f outchan
-          (RegAlloc.f
+  if opt = "parser" then Debug.parse r1 else
+  let r2 = (KNormal.f (Typing.f r1)) in
+  if opt = "knormal" then Debug.knormal r2 else
+  let r3 = (Cse.f r2) in
+  if opt = "cse" then Debug.cse r3 else
+  let r4 = (RegAlloc.f
             (Simm.f
-          (Virtual.f
+              (Virtual.f
                 (Closure.f
-            (iter !limit (Alpha.f r3))))))
+            (iter !limit (Alpha.f r3)))))) in
+  if opt = "asm" then Debug.print_asmprog r4 else
+  Emit.f outchan r4
 
 let string s = lexbuf stdout (Lexing.from_string s) (* 文字列をコンパイルして標準出力に表示する (caml2html: main_string) *)
 
