@@ -175,3 +175,5 @@ let parse e =
 
 let knormal e =
   print_knormal e
+
+let cse = knormal
