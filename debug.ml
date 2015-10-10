@@ -153,15 +153,18 @@ let print_asmprog prog =
     | Asm.IfFEq(x, y, e1, e2) -> printf "\tIFFEQ %s, %s\n" x y; print_cmd e1; print_cmd e2
     | Asm.IfFLE(x, y, e1, e2) -> printf "\tIFFLE %s, %s\n" x y; print_cmd e1; print_cmd e2
     (* closure address, integer arguments, and float arguments *)
-    | Asm.CallCls(x, ys, zs) -> printf "\tCALLCLS\n"
-    | Asm.CallDir(x, ys, zs) -> printf "\tCALLDIR\n"
+    | Asm.CallCls(x, ys, zs) -> printf "\tCALLCLS %s\n" x
+    | Asm.CallDir(Id.L(x), ys, zs) -> printf "\tCALLDIR %s\n" x
     | Asm.Save(x, y) -> printf "\tSAVE %s, %s\n" x y
     | Asm.Restore(x) -> printf "\tRESTORE %s\n" x
   and print_cmd = function
     | Asm.Ans(e) -> print_exp e
     | Asm.Let((x, t), e, cmd) -> printf "\tLET %s\n" x; print_exp e; print_cmd cmd in
   let print_fundef { name = Id.L(x); args = ys; fargs = zs; body = e; ret = t } =
-    printf "\tFUNDEF %s\n" x; print_cmd e in
+    printf "\tFUNDEF %s (" x;
+    List.iter (fun y -> printf " %s" y) ys;
+    print_string " )\n";
+    print_cmd e in
   let Asm.Prog(data, fs, cmd) = prog in
   printf "[Data]\n";
   print_data data;

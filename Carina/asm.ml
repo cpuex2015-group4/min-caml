@@ -51,7 +51,7 @@ let reg_hp = "min_caml_hp" (* heap pointer (caml2html: sparcasm_reghp) *)
 let reg_tmp = "$at" (* assembler template *)
 let reg_ra = "$ra" (* return address *)
 let reg_rv = "$v0" (* return value *)
-let is_reg x = (x.[0] = '%' || x = reg_hp)
+let is_reg x = (x.[0] = '$' || x = reg_hp)
 
 (* super-tenuki *)
 let rec remove_and_uniq xs = function
