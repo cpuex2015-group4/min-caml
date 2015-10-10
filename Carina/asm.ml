@@ -40,18 +40,18 @@ let fletd(x, e1, e2) = Let((x, Type.Float), e1, e2)
 let seq(e1, e2) = Let((Id.gentmp Type.Unit, Type.Unit), e1, e2)
 
 let regs =
-  [| "$t0"; "$t1"; "$t2" ;"$t3"; "$t4"; "$t5"; "$t6"; "$t7" ; "$t8"; "$t9" |]
-let fregs = Array.init 32 (fun i -> Printf.sprintf "$f%d" i)
+  [| "%t0"; "%t1"; "%t2" ;"%t3"; "%t4"; "%t5"; "%t6"; "%t7" ; "%t8"; "%t9" |]
+let fregs = Array.init 32 (fun i -> Printf.sprintf "%%f%d" i)
 let allregs = Array.to_list regs
 let allfregs = Array.to_list fregs
 let reg_cl = regs.(Array.length regs - 1) (* closure address (caml2html: sparcasm_regcl) *)
-let reg_sp = "$sp" (* stack pointer *)
-let reg_fp = "$fp" (* frame pointer *)
+let reg_sp = "%sp" (* stack pointer *)
+let reg_fp = "%fp" (* frame pointer *)
 let reg_hp = "min_caml_hp" (* heap pointer (caml2html: sparcasm_reghp) *)
-let reg_tmp = "$at" (* assembler template *)
-let reg_ra = "$ra" (* return address *)
-let reg_rv = "$v0" (* return value *)
-let is_reg x = (x.[0] = '$' || x = reg_hp)
+let reg_tmp = "%at" (* assembler template *)
+let reg_ra = "%ra" (* return address *)
+let reg_rv = "%v0" (* return value *)
+let is_reg x = (x.[0] = '%' || x = reg_hp)
 
 (* super-tenuki *)
 let rec remove_and_uniq xs = function
