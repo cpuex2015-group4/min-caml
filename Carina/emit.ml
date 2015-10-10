@@ -120,26 +120,18 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 末尾だったら計算結果を第一レジスタにセットしてret (caml2html: emit_tailret) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
-      Printf.fprintf oc "\tlw      %s, 1(%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $1\n" reg_sp reg_sp;
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (Set _ | SetL _ | Mov _ | Neg _ | Add _ | Sub _ | Ld _ as exp) ->
       g' oc (NonTail(reg_rv), exp);
-      Printf.fprintf oc "\tlw      %s, 1(%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $1\n" reg_sp reg_sp;
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (FMovD _ | FNegD _ | FAddD _ | FSubD _ | FMulD _ | FDivD _ | LdDF _  as exp) ->
       g' oc (NonTail(fregs.(0)), exp);
-      Printf.fprintf oc "\tlw      %s, 1(%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $1\n" reg_sp reg_sp;
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (Restore(x) as exp) ->
       (match locate x with
       | [i] -> g' oc (NonTail(reg_rv), exp)
       | [i; j] when i + 1 = j -> g' oc (NonTail(fregs.(0)), exp)
       | _ -> assert false);
-      Printf.fprintf oc "\tlw      %s, 1(%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $1\n" reg_sp reg_sp;
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, IfEq(x, V(y), e1, e2) ->
       g'_tail_if oc e1 e2 "beq"
