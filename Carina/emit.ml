@@ -137,7 +137,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_tail_if oc e1 e2 "beq"
       (Printf.sprintf "bne     %s, %s, " x y)
   | Tail, IfEq(x, C(i), e1, e2) ->
-      Printf.fprintf oc "\tsub     %s, %s, $%d\n" x x i;
+      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" x x i;
       g'_tail_if oc e1 e2 "beq"
       (Printf.sprintf "bne     %s, $zero, " x)
   | Tail, IfLE(x, y', e1, e2) ->
@@ -162,7 +162,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
       (Printf.sprintf "bne     %s, %s, " x y)
   | NonTail(z), IfEq(x, C(i), e1, e2) ->
-      Printf.fprintf oc "\tsub     %s, %s, $%d\n" x x i;
+      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" x x i;
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
       (Printf.sprintf "bne     %s, $zero, " x)
   | NonTail(z), IfLE(x, y', e1, e2) ->
