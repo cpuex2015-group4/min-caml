@@ -51,6 +51,7 @@ let reg_hp = "%gp" (* heap pointer (caml2html: sparcasm_reghp) *)
 let reg_tmp = "%at" (* assembler template *)
 let reg_ra = "%ra" (* return address *)
 let reg_rv = "%v0" (* return value *)
+let reg_zero = "%zero" (* zero register *)
 let is_reg x = (x.[0] = '%' || x = reg_hp)
 
 (* super-tenuki *)
