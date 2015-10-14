@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-ln -sf carina/{*.ml{,i},libmincaml.S} .
-cd shootout; ln -sf carina/Makefile .
-cd ../bytemark; ln -sf carina/Makefile .
-cd ../min-rt; ln -sf carina/globals.s .
+ln -sf Carina/{*.ml{,i},libmincaml.S} .
+cd shootout; ln -sf Carina/Makefile .
+cd ../bytemark; ln -sf Carina/Makefile .
+cd ../min-rt; ln -sf Carina/globals.s .
 cd ..
