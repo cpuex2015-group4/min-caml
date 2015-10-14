@@ -142,14 +142,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (Printf.sprintf "bne     %s, %s, " x reg_zero)
   | Tail, IfLE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x
-      | C(i) -> Printf.fprintf oc "\tslti    %s, $%d, %s\n" reg_tmp i x);
+      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y
+      | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
       g'_tail_if oc e1 e2 "beq"
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | Tail, IfGE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y 
-      | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
+      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x 
+      | C(i) ->
+              (Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
+               Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp reg_tmp x));
       g'_tail_if oc e1 e2 "beq"
       (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
   | Tail, IfFEq(x, y, e1, e2) ->
@@ -167,14 +169,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (Printf.sprintf "bne     %s, %s, " x reg_zero)
   | NonTail(z), IfLE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x
-      | C(i) -> Printf.fprintf oc "\tslti    %s, $%d, %s\n" reg_tmp i x);
+      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y
+      | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfGE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y 
-      | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
+      | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x 
+      | C(i) ->
+              (Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
+               Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp reg_tmp x));
       g'_non_tail_if oc (NonTail(z)) e1 e2 "bne"
       (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfFEq(x, y, e1, e2) ->
@@ -237,6 +241,7 @@ and g'_non_tail_if oc dest e1 e2 b bn =
   let stackset2 = !stackset in
   stackset := S.inter stackset1 stackset2
 and g'_args oc x_reg_cl ys zs =
+  (* TODO: use %a[i] registers and stack to pass arguments *)
   assert (List.length ys <= Array.length regs - List.length x_reg_cl);
   assert (List.length zs <= Array.length fregs);
   let sw = Printf.sprintf "%d(%s)" (stacksize ()) reg_sp in
@@ -246,7 +251,7 @@ and g'_args oc x_reg_cl ys zs =
       (0, x_reg_cl)
       ys in
   List.iter
-    (fun (y, r) -> Printf.fprintf oc "\tmove    %s, %s\n" y r)
+    (fun (y, r) -> Printf.fprintf oc "\tmove    %s, %s\n" r y)
     (shuffle sw yrs);
   let (d, zfrs) =
     List.fold_left
@@ -254,7 +259,7 @@ and g'_args oc x_reg_cl ys zs =
       (0, [])
       zs in
   List.iter
-    (fun (z, fr) -> Printf.fprintf oc "\tmove.s  %s, %s\n" z fr)
+    (fun (z, fr) -> Printf.fprintf oc "\tmove.s  %s, %s\n" fr z)
     (shuffle sw zfrs)
 
 let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
