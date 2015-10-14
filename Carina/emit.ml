@@ -201,7 +201,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
       Printf.fprintf oc "\tjal     *(%s)\n" reg_cl;
       Printf.fprintf oc "\tlw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (-ss);
+      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
       else if List.mem a allfregs && a <> fregs.(0) then
@@ -213,7 +213,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
       Printf.fprintf oc "\tjal     %s\n" x;
       Printf.fprintf oc "\tlw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (-ss);
+      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
       else if List.mem a allfregs && a <> fregs.(0) then
@@ -291,7 +291,7 @@ let f oc (Prog(data, fundefs, e)) =
   g oc (NonTail(reg_rv), e);
   Printf.fprintf oc "\t# main program end\n";
   Printf.fprintf oc "\tmove    %s, %s\n" reg_sp reg_fp;
-  Printf.fprintf oc "\tlw      %s, (%s)\n" reg_fp reg_sp;
+  Printf.fprintf oc "\tlw      %s, 0(%s)\n" reg_fp reg_sp;
   Printf.fprintf oc "\tlw      %s, -1(%s)\n" reg_ra reg_sp;
   Printf.fprintf oc "\taddi    %s, %s, $2\n" reg_sp reg_sp;
   Printf.fprintf oc "\thlt\n"
