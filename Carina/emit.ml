@@ -279,11 +279,13 @@ let f oc (Prog(data, fundefs, e)) =
   Printf.fprintf oc "\tsubi    %s, %s, $2\n" reg_sp reg_sp;
   Printf.fprintf oc "\tsw      %s, 1(%s)\n" reg_ra reg_sp;
   Printf.fprintf oc "\tsw      %s, 0(%s)\n" reg_fp reg_sp;
+  Printf.fprintf oc "\tmove    %s, %s\n" reg_fp reg_sp;
   Printf.fprintf oc "\t# main program start\n";
   stackset := S.empty;
   stackmap := [];
   g oc (NonTail(reg_rv), e);
   Printf.fprintf oc "\t# main program end\n";
+  Printf.fprintf oc "\tmove    %s, %s\n" reg_sp reg_fp;
   Printf.fprintf oc "\tlw      %s, (%s)\n" reg_fp reg_sp;
   Printf.fprintf oc "\tlw      %s, -1(%s)\n" reg_ra reg_sp;
   Printf.fprintf oc "\taddi    %s, %s, $2\n" reg_sp reg_sp;
