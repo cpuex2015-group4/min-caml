@@ -64,10 +64,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       | C(i) -> Printf.fprintf oc "\taddi    %s, %s, $%d\n" x y i)
   | NonTail(x), Sub(y, z') ->
       (match z' with
-      | V(z) -> Printf.fprintf oc "\tsub      %s, %s, %s\n" x y z
-      | C(i) -> (
-        Printf.fprintf oc "\tli      %s, $%d\n" x i;
-        Printf.fprintf oc "\tsub     %s, %s, %s\n" x y x))
+      | V(z) -> Printf.fprintf oc "\tsub     %s, %s, %s\n" x y z
+      | C(i) -> Printf.fprintf oc "\tsubi    %s, %s, $%d\n" x y i)
   | NonTail(x), Ld(y, V(z)) -> 
       (Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp y z;
        Printf.fprintf oc "\tlw      %s, (%s)\n" x reg_tmp)
