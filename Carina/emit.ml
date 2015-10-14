@@ -21,7 +21,7 @@ let locate x =
     | y :: zs when x = y -> 0 :: List.map succ (loc zs)
     | y :: zs -> List.map succ (loc zs) in
   loc !stackmap
-let offset x = 1 * List.hd (locate x)
+let offset x = - (List.hd (locate x) + 1)
 let stacksize () = align (List.length !stackmap * 1)
 
 let pp_id_or_imm = function
@@ -197,11 +197,11 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(a), CallCls(x, ys, zs) ->
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
-      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp ss;
-      Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
+      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
+      Printf.fprintf oc "\tsw      %s, (%s)\n" reg_ra reg_sp;
       Printf.fprintf oc "\tjal     *(%s)\n" reg_cl;
-      Printf.fprintf oc "\tlw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
+      Printf.fprintf oc "\tlw      %s, (%s)\n" reg_ra reg_sp;
+      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
       else if List.mem a allfregs && a <> fregs.(0) then
@@ -209,11 +209,11 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(a), CallDir(Id.L(x), ys, zs) ->
       g'_args oc [] ys zs;
       let ss = stacksize () in
-      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp ss;
-      Printf.fprintf oc "\tsw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
+      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
+      Printf.fprintf oc "\tsw      %s, (%s)\n" reg_ra reg_sp;
       Printf.fprintf oc "\tjal     %s\n" x;
-      Printf.fprintf oc "\tlw      %s, %d(%s)\n" reg_ra (ss - 1) reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp ss;
+      Printf.fprintf oc "\tlw      %s, (%s)\n" reg_ra reg_sp;
+      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
       else if List.mem a allfregs && a <> fregs.(0) then
