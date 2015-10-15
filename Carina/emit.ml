@@ -132,26 +132,26 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       | _ -> assert false);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, IfEq(x, V(y), e1, e2) ->
-      g'_tail_if oc e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " x y)
+      g'_tail_if oc e1 e2 "bne"
+      (Printf.sprintf "beq     %s, %s, " x y)
   | Tail, IfEq(x, C(i), e1, e2) ->
       Printf.fprintf oc "\tsubi    %s, %s, $%d\n" x x i;
-      g'_tail_if oc e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " x reg_zero)
+      g'_tail_if oc e1 e2 "bne"
+      (Printf.sprintf "beq     %s, %s, " x reg_zero)
   | Tail, IfLE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y
       | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
-      g'_tail_if oc e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      g'_tail_if oc e1 e2 "bne"
+      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
   | Tail, IfGE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x 
       | C(i) ->
               (Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
                Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp reg_tmp x));
-      g'_tail_if oc e1 e2 "beq"
-      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
+      g'_tail_if oc e1 e2 "bne"
+      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | Tail, IfFEq(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.eq.s  %s, %s\n" x y;
       g'_tail_if oc e1 e2 "bclt" "bclf"
@@ -160,25 +160,25 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_tail_if oc e1 e2 "bclt" "bclf"
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " x y)
+      (Printf.sprintf "beq     %s, %s, " x y)
   | NonTail(z), IfEq(x, C(i), e1, e2) ->
       Printf.fprintf oc "\tsubi    %s, %s, $%d\n" x x i;
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " x reg_zero)
+      (Printf.sprintf "beq     %s, %s, " x reg_zero)
   | NonTail(z), IfLE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp x y
       | C(i) -> Printf.fprintf oc "\tslti    %s, %s, $%d\n" reg_tmp x i);
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "bne"
+      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfGE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp y x 
       | C(i) ->
               (Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
                Printf.fprintf oc "\tslt     %s, %s, %s\n" reg_tmp reg_tmp x));
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bne"
-      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "beq"
+      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfFEq(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.eq.s  %s, %s\n" x y;
       g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf"
