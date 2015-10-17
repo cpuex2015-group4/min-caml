@@ -2,6 +2,7 @@ open Printf
 open Exception
 
 let limit = ref 1000
+let warning = ref ""
 
 let rec iter n e = (* 最適化処理をくりかえす (caml2html: main_iter) *)
   Format.eprintf "iteration %d@." n;
@@ -20,7 +21,7 @@ let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2htm
 	     (Closure.f
 		(iter !limit
 		   (Alpha.f (Cse.f (KNormal.f
-			 (Typing.f
+			 (Typing.f !warning
 			    (Parser.exp Lexer.token l))))))))))
 
 let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
@@ -28,7 +29,7 @@ let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   Typing.extenv := M.empty;
   let r1 = (Parser.exp Lexer.token l) in
   if opt = "parser" then Debug.parse r1 else
-  let r2 = (KNormal.f (Typing.f r1)) in
+  let r2 = (KNormal.f (Typing.f !warning r1)) in
   if opt = "knormal" then Debug.knormal r2 else
   let r3 = (Cse.f r2) in
   if opt = "cse" then Debug.cse r3 else
@@ -64,7 +65,8 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
-     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, cse, asm]")]
+     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, cse, asm]");
+     ("-W", Arg.String(fun opt -> warning := opt), "warning options [return_unit]")]
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^
      Printf.sprintf "usage: %s [-inline m] [-iter n] ...filenames without \".ml\"..." Sys.argv.(0));

@@ -159,7 +159,7 @@ let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
       Printf.sprintf "This expression has type %s but an expression was expected of type %s"
         (Type.of_string t2) (Type.of_string t1)))
 
-let f e =
+let f opt e =
   extenv := M.empty;
 (*
   (match deref_typ (g M.empty e) with
@@ -167,6 +167,9 @@ let f e =
   | _ -> Format.eprintf "warning: final result does not have type unit@.");
 *)
   (try unify Type.Unit (g M.empty e)
-  with Unify _ -> failwith "top level does not have type unit");
+  with Unify _ -> 
+    if opt = "return_unit" then
+      failwith "top level does not have type unit"
+    else ());
   extenv := M.map deref_typ !extenv;
   deref_term e

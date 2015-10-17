@@ -1,2 +1,2 @@
 val extenv : Type.t M.t ref
-val f : Syntax.t -> Syntax.t
+val f : string -> Syntax.t -> Syntax.t
