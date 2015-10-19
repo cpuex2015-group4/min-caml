@@ -246,17 +246,33 @@ and g'_args oc x_reg_cl ys zs =
       (fun (i, yrs) y -> (i + 1, (y, regs.(i)) :: yrs))
       (0, x_reg_cl)
       ys in
-  List.iter
-    (fun (y, r) -> Printf.fprintf oc "\tmove    %s, %s\n" r y)
-    (shuffle sw yrs);
+  let move_inst (src, dst) =
+    if not (List.mem src allregs) && not (List.mem dst allregs) then
+      (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
+      Printf.fprintf oc "\tsw      %s, %s\n" dst reg_tmp)
+    else if not (List.mem src allregs) then
+      Printf.fprintf oc "\tlw      %s, %s\n" dst src
+    else if not (List.mem dst allregs) then
+      Printf.fprintf oc "\tsw      %s, %s\n" src dst
+    else
+      Printf.fprintf oc "\tmove    %s, %s\n" dst src in
+  List.iter move_inst (shuffle sw yrs);
   let (d, zfrs) =
     List.fold_left
       (fun (d, zfrs) z -> (d + 1, (z, fregs.(d)) :: zfrs))
       (0, [])
-      zs in
-  List.iter
-    (fun (z, fr) -> Printf.fprintf oc "\tmove.s  %s, %s\n" fr z)
-    (shuffle sw zfrs)
+     zs in
+   let fmove_inst (src, dst) =
+    if not (List.mem src allfregs) && not (List.mem dst allfregs) then
+      (Printf.fprintf oc "\tlw.s    %s, %s\n" reg_tmp src;
+      Printf.fprintf oc "\tsw.s    %s, %s\n" dst reg_tmp)
+    else if not (List.mem src allfregs) then
+      Printf.fprintf oc "\tlw.s    %s, %s\n" dst src
+    else if not (List.mem dst allfregs) then
+      Printf.fprintf oc "\tsw.s    %s, %s\n" src dst
+    else
+      Printf.fprintf oc "\tmove.s  %s, %s\n" dst src in
+  List.iter fmove_inst (shuffle sw zfrs)
 
 let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
   Printf.fprintf oc "%s:\n" x;
