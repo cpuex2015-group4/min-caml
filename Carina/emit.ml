@@ -1,7 +1,6 @@
 open Asm
 
-external gethi : float -> int32 = "gethi"
-external getlo : float -> int32 = "getlo"
+external f2bin : float -> int32 = "f2bin"
 
 let stackset = ref S.empty (* すでにSaveされた変数の集合 (caml2html: emit_stackset) *)
 let stackmap = ref [] (* Saveされた変数の、スタックにおける位置 (caml2html: emit_stackmap) *)
@@ -286,8 +285,7 @@ let f oc (Prog(data, fundefs, e)) =
   List.iter
   (fun (Id.L(x), d) ->
     Printf.fprintf oc "%s:\t# %f\n" x d;
-    Printf.fprintf oc "\t.long\t0x%lx\n" (gethi d);
-    Printf.fprintf oc "\t.long\t0x%lx\n" (getlo d))
+    Printf.fprintf oc "\t.long\t0x%lx\n" (f2bin d))
   data;
   Printf.fprintf oc ".text\n";
   Printf.fprintf oc "\t.globl  _min_caml_start\n";
