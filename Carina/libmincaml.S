@@ -1,63 +1,63 @@
 .text
-.globl min_caml_print_newline
-min_caml_print_newline:
+.globl print_newline
+print_newline:
 	li      %a0, $10
 	syscall $4
 	jr      %ra
 
-.globl min_caml_print_int
-min_caml_print_int:
+.globl print_int
+print_int:
 	addi    %a0, %a0, $0x30
 	syscall $4
 	jr      %ra
 
-.globl min_caml_print_byte
-min_caml_print_byte:
+.globl print_byte
+print_byte:
 	syscall $4
 	jr      %ra
 
 # TODO: output to stderr
-.globl min_caml_prerr_int
-min_caml_prerr_int:
+.globl prerr_int
+prerr_int:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
-	jal     min_caml_print_int
+	jal     print_int
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
 	jr      %ra
 
 # TODO: output to stderr
-.globl min_caml_prerr_byte
-min_caml_prerr_byte:
+.globl prerr_byte
+prerr_byte:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
-	jal     min_caml_print_byte
+	jal     print_byte
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
 	jr      %ra
 
-#.globl min_caml_prerr_float
-#min_caml_prerr_float:
+#.globl prerr_float
+#prerr_float:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK0
 #	subl	$8, %esp
 #	movsd	%xmm0, (%esp)
 #	pushl	$format_float
-#	pushl	U(min_caml_stderr)
+#	pushl	U(stderr)
 #	call	U(fprintf)
 #	movl	%ebp, %esp
 #	popl	%ebp
 #	ret
 
-.globl min_caml_read_int
-min_caml_read_int:
+.globl read_int
+read_int:
 	syscall $3
 	subi    %v0, %v0, $0x30
 	jr      %ra
 
-#.globl min_caml_read_float
-#min_caml_read_float:
+#.globl read_float
+#read_float:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK0
@@ -71,17 +71,17 @@ min_caml_read_int:
 #	popl	%ebp
 #	ret
 
-#.globl min_caml_create_array
-#min_caml_create_array:
+#.globl create_array
+#create_array:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	pushl	%ecx
 #	pushl	%edx
 #	movl	%eax, %ecx
-#	movl	min_caml_hp, %eax
+#	movl	hp, %eax
 #	movl	%ecx, %edx
 #	shll	$2, %edx
-#	addl	%edx, min_caml_hp
+#	addl	%edx, hp
 #create_array_loop:
 #	cmpl	$0, %ecx
 #	jne	create_array_cont
@@ -95,17 +95,17 @@ min_caml_read_int:
 #	decl	%ecx
 #	movl	%ebx, (%eax,%ecx,4)
 #	jmp	create_array_loop
-#.globl min_caml_create_float_array
-#min_caml_create_float_array:
+#.globl create_float_array
+#create_float_array:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	pushl	%ecx
 #	pushl	%edx
 #	movl	%eax, %ecx
-#	movl	min_caml_hp, %eax
+#	movl	hp, %eax
 #	movl	%ecx, %edx
 #	shll	$3, %edx
-#	addl	%edx, min_caml_hp
+#	addl	%edx, hp
 #create_float_array_loop:
 #	cmpl	$0, %ecx
 #	jne	create_float_array_cont
@@ -119,8 +119,8 @@ min_caml_read_int:
 #	decl	%ecx
 #	movsd	%xmm0, (%eax,%ecx,8)
 #	jmp	create_float_array_loop
-#.globl min_caml_abs_float
-#min_caml_abs_float:
+#.globl abs_float
+#abs_float:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK2
@@ -132,12 +132,12 @@ min_caml_read_int:
 #	movl	%ebp, %esp
 #	popl	%ebp
 #	ret
-#.globl min_caml_sqrt
-#min_caml_sqrt:
+#.globl sqrt
+#sqrt:
 #	sqrtsd	%xmm0, %xmm0
 #	ret
-#.globl min_caml_floor
-#min_caml_floor:
+#.globl floor
+#floor:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK2
@@ -149,18 +149,18 @@ min_caml_read_int:
 #	movl	%ebp, %esp
 #	popl	%ebp
 #	ret
-#.globl min_caml_int_of_float
-#min_caml_int_of_float:
-#.globl min_caml_truncate
-#min_caml_truncate:
+#.globl int_of_float
+#int_of_float:
+#.globl truncate
+#truncate:
 #	cvttsd2si	%xmm0, %eax
 #	ret
-#.globl min_caml_float_of_int
-#min_caml_float_of_int:
+#.globl float_of_int
+#float_of_int:
 #	cvtsi2sd	%eax, %xmm0
 #	ret
-#.globl min_caml_cos
-#min_caml_cos:
+#.globl cos
+#cos:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK2
@@ -172,8 +172,8 @@ min_caml_read_int:
 #	movl	%ebp, %esp
 #	popl	%ebp
 #	ret
-#.globl min_caml_sin
-#min_caml_sin:
+#.globl sin
+#sin:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK2
@@ -185,8 +185,8 @@ min_caml_read_int:
 #	movl	%ebp, %esp
 #	popl	%ebp
 #	ret
-#.globl min_caml_atan
-#min_caml_atan:
+#.globl atan
+#atan:
 #	pushl	%ebp
 #	movl	%esp, %ebp
 #	ALIGNSTACK2
@@ -211,8 +211,8 @@ min_caml_read_int:
 #	.long	0x0
 #	.long	0x3ff00000
 #.balign 16
-#.globl min_caml_fnegd
-#min_caml_fnegd:
+#.globl fnegd
+#fnegd:
 #	.long	0
 #	.long	0x80000000
 #	.long	0
