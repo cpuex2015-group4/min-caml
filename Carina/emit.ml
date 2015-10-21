@@ -52,7 +52,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 末尾でなかったら計算結果をdestにセット (caml2html: emit_nontail) *)
   | NonTail(_), Nop -> Printf.fprintf oc "\tnop\n"
   | NonTail(x), Set(i) -> Printf.fprintf oc "\tli      %s, $%d\n" x i
-  | NonTail(x), SetL(Id.L(y)) -> Printf.fprintf oc "\tlw      %s, %s\n" x y
+  | NonTail(x), SetL(Id.L(y)) -> Printf.fprintf oc "\tli      %s, %s\n" x y
   | NonTail(x), Mov(y) ->
       if x <> y then Printf.fprintf oc "\tmove    %s, %s\n" x y
   | NonTail(x), Neg(y) ->
@@ -89,9 +89,11 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\tdiv.s   %s, %s, %s\n" x y z
   | NonTail(x), LdDF(y, V(z)) ->
       (Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp y z;
+       Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp reg_tmp reg_hp;
        Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_tmp)
   | NonTail(x), LdDF(y, C(j)) ->
       (Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_tmp y j;
+       Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp reg_tmp reg_hp;
        Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_tmp)
   | NonTail(_), StDF(x, y, V(z)) ->
       (Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp y z;
