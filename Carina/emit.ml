@@ -84,7 +84,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), FSubD(y, z) ->
       Printf.fprintf oc "\tsub.s   %s, %s, %s\n" x y z
   | NonTail(x), FMulD(y, z) ->
-      Printf.fprintf oc "\tmult.s   %s, %s, %s\n" x y z
+      Printf.fprintf oc "\tmul.s   %s, %s, %s\n" x y z
   | NonTail(x), FDivD(y, z) ->
       Printf.fprintf oc "\tdiv.s   %s, %s, %s\n" x y z
   | NonTail(x), LdDF(y, V(z)) ->
