@@ -50,7 +50,7 @@ let rec g oc = function (* 命令列のアセンブリ生成 (caml2html: emit_g) *)
       g oc (dest, e)
 and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 末尾でなかったら計算結果をdestにセット (caml2html: emit_nontail) *)
-  | NonTail(_), Nop -> Printf.fprintf oc "\tnop\n"
+  | NonTail(_), Nop -> Printf.fprintf oc "\taddi    %s, %s, $0\n" reg_tmp reg_tmp
   | NonTail(x), Set(i) -> Printf.fprintf oc "\tli      %s, $%d\n" x i
   | NonTail(x), SetL(Id.L(y)) -> Printf.fprintf oc "\tli      %s, %s\n" x y
   | NonTail(x), Mov(y) ->

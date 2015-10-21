@@ -27,9 +27,9 @@ let expand xts ini addf addi =
     ini
     (fun (offset, acc) x ->
       let offset = align offset in
-      (offset + 8, addf x offset acc))
+      (offset + 1, addf x offset acc))
     (fun (offset, acc) x t ->
-      (offset + 4, addi x t offset acc))
+      (offset + 1, addi x t offset acc))
 
 let rec g env = function (* 式の仮想マシンコード生成 (caml2html: virtual_g) *)
   | Closure.Unit -> Ans(Nop)
