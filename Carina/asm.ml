@@ -41,7 +41,11 @@ let seq(e1, e2) = Let((Id.gentmp Type.Unit, Type.Unit), e1, e2)
 
 let regs =
   [| "%t0"; "%t1"; "%t2" ;"%t3"; "%t4"; "%t5"; "%t6"; "%t7" ; "%t8"; "%t9" |]
-let fregs = Array.init 32 (fun i -> Printf.sprintf "%%f%d" i)
+let fregs = 
+  [| "%f1"; "%f2" ;"%f3"; "%f4"; "%f5"; "%f6"; "%f7"; "%f8"; "%f9" ; "%f10";
+     "%f11"; "%f12" ;"%f13"; "%f14"; "%f15"; "%f16"; "%f17"; "%f18"; "%f19";
+     "%f20"; "%f21"; "%f22"; "%f23"; "%f24"; "%f25"; "%f26"; "%f27"; "%f28";
+     "%f29"; "%f30"; "%f31" |]
 let allregs = Array.to_list regs
 let allfregs = Array.to_list fregs
 let reg_cl = regs.(Array.length regs - 1) (* closure address (caml2html: sparcasm_regcl) *)
@@ -52,6 +56,7 @@ let reg_tmp = "%at" (* assembler template *)
 let reg_ra = "%ra" (* return address *)
 let reg_rv = "%v0" (* return value *)
 let reg_zero = "%zero" (* zero register *)
+let reg_fz = "%f0"
 let is_reg x = (x.[0] = '%' || x = reg_hp)
 
 (* super-tenuki *)
