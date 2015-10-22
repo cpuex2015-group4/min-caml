@@ -92,7 +92,7 @@ let rec g env = function
   | FMul(x, y) -> FMul(x, y)
   | FDiv(x, y) -> FDiv(x, y)
   | IfEq(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
-  | IfLE(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
+  | IfLE(x, y, e1, e2) -> IfLE(x, y, g env e1, g env e2)
   | Let((x, t), e1, e2) -> (
       try
         (* Letで代入している式と同じ式が環境にないか探す *)
