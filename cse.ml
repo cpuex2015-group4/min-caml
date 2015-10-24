@@ -55,8 +55,9 @@ let rec is_common_subexpr env1 e1 env2 e2 =
   | ExtArray(x1), ExtArray(x2) ->
       is_same_id env1 x1 env2 x2
   | ExtFunApp(x1, ys1), ExtFunApp(x2, ys2) ->
-      (is_same_id env1 x1 env2 x2) && (is_same_ids env1 ys1 env2 ys2)
-  | _, _ -> false
+      (* 外部関数は副作用があるかどうか判定できないのでCSEを行わない *)
+      false
+  | _,  _ -> false
 (* 同じ識別子かどうか判定 *)
 and is_same_id env1 id1 env2 id2 =
   if id1 = id2 then true
@@ -70,33 +71,6 @@ and is_same_id env1 id1 env2 id2 =
 and is_same_ids env1 ids1 env2 ids2 =
   if List.length ids1 != List.length ids2 then false
   else List.fold_left (&&) true (List.map2 (fun id1 id2 -> is_same_id env1 id1 env2 id2) ids1 ids2)
-
-(* 
- * 副作用のある式が部分式に含まれているか判定する
- * ここでは副作用のある式は
- *   - 戻り値がUnitの関数の関数適用式
- *   - ExtFunApp（戻り値がわからないので）
- *   - Int, Float
- * とする
- *)
-let has_side_effect e =
-  let rec hse env = function
-    | Int(i) -> true
-    | Float(f) -> true
-    | IfEq(x, y, e1, e2) -> hse env e1 || hse env e2
-    | IfLE(x, y, e1, e2) -> hse env e1 || hse env e2
-    | Let((x, t), e1, e2) ->
-        let env' = M.add x t env in
-        hse env e1 || hse env e2
-    | LetRec({ name = (x, t); args = ys; body = e1 }, e2) -> 
-        let env' = M.add x t env in
-        hse env' e1 || hse env' e2
-    | LetTuple(xs, x, e) -> hse env e
-    | App(x, xs) ->
-        M.find x env = Type.Unit
-    | ExtFunApp(x, ys) -> true
-    | _ -> false
-  in hse M.empty e
 
 (* 与式が環境にある場合はその識別子を返す *)
 let rec expr_of_id e env =
@@ -121,20 +95,21 @@ let rec g env = function
   | IfEq(x, y, e1, e2) -> IfEq(x, y, g env e1, g env e2)
   | IfLE(x, y, e1, e2) -> IfLE(x, y, g env e1, g env e2)
   | Let((x, t), e1, e2) -> (
-      try
-        if has_side_effect e1 then
-          (* 副作用を持つ式の場合は共通部分式除去を行わない *)
-          Let((x, t), e1, e2)
-        else
+      match e1 with
+      | Int(_) | Float(_) ->
+          (* Int, Floatは即値最適化で再配置されるのでCSEは行わない *)
+          Let((x, t), e1, g env e2)
+      | _ -> (
+        try
           (* Letで代入している式と同じ式が環境にないか探す *)
           let id = expr_of_id e1 env in
           let e' = if id != x then (Var(id)) else e1 in
           let env' = M.add x e' env in
           Let((x, t), g env e', g env' e2)
-      with Not_found ->
-        (* 見つからない場合は新しく環境に登録する *)
-        let env' = M.add x e1 env in
-        Let((x, t), g env e1, g env' e2))
+        with Not_found ->
+          (* 見つからない場合は新しく環境に登録する *)
+          let env' = M.add x e1 env in
+          Let((x, t), g env e1, g env' e2)))
   | Var(x) -> Var(x)
   | LetRec({ name = (x, t); args = ys; body = e1 }, e2) ->
       LetRec({ name = (x, t); args = ys; body = g env e1 }, g env e2)
