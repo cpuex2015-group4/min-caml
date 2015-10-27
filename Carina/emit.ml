@@ -78,12 +78,15 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), FMovD(y) ->
       if x <> y then
         if List.mem x allfregs then
-          Printf.fprintf oc "\tlw.s    %s, %s\n" x y
+          (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
+           Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
+           Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_sp;
+           Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1)
         else
-          Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-          Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
-          Printf.fprintf oc "\tlw      %s, (%s)\n" x reg_sp;
-          Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1
+          (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
+           Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
+           Printf.fprintf oc "\tlw      %s, (%s)\n" x reg_sp;
+           Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1)
   | NonTail(x), FNegD(y) ->
       Printf.fprintf oc "\tsub.s   %s, %s, %s\n" x reg_zero y
   | NonTail(x), FAddD(y, z) ->
@@ -276,12 +279,17 @@ and g'_args oc x_reg_cl ys zs =
      zs in
    let fmove_inst (src, dst) =
     if not (List.mem src allfregs) && not (List.mem dst allfregs) then
-      (Printf.fprintf oc "\tlw.s    %s, %s\n" reg_tmp src;
-      Printf.fprintf oc "\tsw.s    %s, %s\n" dst reg_tmp)
+      Printf.fprintf oc "\tmove    %s, %s\n" dst src
     else if not (List.mem src allfregs) then
-      Printf.fprintf oc "\tlw.s    %s, %s\n" dst src
+      (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
+       Printf.fprintf oc "\tsw      %s, (%s)\n" src reg_sp;
+       Printf.fprintf oc "\tlw.s    %s, (%s)\n" dst reg_sp;
+       Printf.fprintf oc "\taddi    %s, %s $%d\n" reg_sp reg_sp 1)
     else if not (List.mem dst allfregs) then
-      Printf.fprintf oc "\tsw.s    %s, %s\n" src dst
+      (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
+       Printf.fprintf oc "\tsw.s    %s, (%s)\n" src reg_sp;
+       Printf.fprintf oc "\tlw      %s, (%s)\n" dst reg_sp;
+       Printf.fprintf oc "\taddi    %s, %s $%d\n" reg_sp reg_sp 1)
     else
       Printf.fprintf oc "\tmove.s  %s, %s\n" dst src in
   List.iter fmove_inst (shuffle sw zfrs)
