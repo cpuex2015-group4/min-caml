@@ -77,9 +77,11 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
     Lexing_failure (i, j, msg)
   | Parsing_failure (i, j, msg)
   | Typing_failure (i, j, msg) ->
-      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s"
+      printf "File \"%s.ml\", line %d, character %d-%d:\nError: %s\n"
       !processing_file Lexing.(i.pos_lnum)
       (Lexing.(i.pos_cnum) - Lexing.(i.pos_bol))
-      (Lexing.(j.pos_cnum) - Lexing.(j.pos_bol)) msg
+      (Lexing.(j.pos_cnum) - Lexing.(j.pos_bol)) msg;
+      exit 2
   | Failure (msg) ->
-      printf "File \"%s.ml\":\nError: %s" !processing_file msg
+      printf "File \"%s.ml\":\nError: %s\n" !processing_file msg;
+      exit 2
