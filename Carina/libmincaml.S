@@ -106,8 +106,13 @@ reduction.3:
 
 .globl min_caml_sin
 min_caml_sin:
-	li      %t1, $1
-	li      %t2, $0  # sign
+	c.le.s  %f1, %zero
+	bclt    sin_neg.0
+	li      %t2, $0
+	j       sin_neg.1
+sin_neg.0:
+	li      %t2, $1
+sin_neg.1:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
 	jal     min_caml_fabs
