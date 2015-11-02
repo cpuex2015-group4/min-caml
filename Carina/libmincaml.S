@@ -399,3 +399,23 @@ min_caml_floor:
 	addi    %sp, %sp, $1
 floor.0:
 	jr      %ra
+
+.text
+.globl min_caml_sqrt
+min_caml_sqrt:
+	li      %at, HALF
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	mul.s   %f30, %f1, %f31
+	li      %t0, $10
+sqrt.0:
+	beq     %t0, %zero, sqrt.1
+	inv.s   %f29, %f30
+	mul.s   %f29, %f29, %f1
+	add.s   %f30, %f30, %f29
+	mul.s   %f30, %f30, %f31
+	subi    %t0, %t0, $1
+	j       sqrt.0
+sqrt.1:
+	move.s  %f1, %f30
+	jr      %ra
