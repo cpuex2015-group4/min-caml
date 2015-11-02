@@ -322,6 +322,8 @@ fabs.1:
 .data
 FLOAT_THR:
 	.long   0x4b000000
+FLOAT_THR2:
+	.long   0x4affffff
 FLOAT_THRI:
 	.long   0x00800000
 
@@ -355,6 +357,9 @@ min_caml_int_of_float:
 	li      %at, FLOAT_THR
 	add     %at, %at, %gp
 	lw.s    %f31, (%at)
+	li      %at, FLOAT_THR2
+	add     %at, %at, %gp
+	lw.s    %f30, (%at)
 	lw      %t9, FLOAT_THR
 	lw      %t8, FLOAT_THRI
 	li      %t7, $0
