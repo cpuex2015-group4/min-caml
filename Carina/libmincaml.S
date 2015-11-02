@@ -191,6 +191,115 @@ cos.4:
 	addi    %sp, %sp, $1
 	jr      %ra
 
+.data
+ATAN_THR1:
+	.long   0x3ee00000
+ATAN_THR2:
+	.long   0x401c0000
+AT1:
+	.long   0x3f800000
+AT3:
+	.long   0xbeaaaaaa
+AT5:
+	.long   0x3e4ccccd
+AT7:
+	.long   0xbe124925
+AT9:
+	.long   0x3de38e38
+AT11:
+	.long   0xbdb7d66e
+AT13:
+	.long   0x3d75e7c5
+
+.text
+kernel_atan:
+	mul.s   %f30, %f1, %f1
+	sub.s   %f30, %f0, %f30
+	li      %at, AT13
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f30, %f29
+	li      %at, AT11
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	add.s   %f31, %f31, %f29
+	li      %at, AT9
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f31, %f30
+	add.s   %f31, %f31, %f29
+	li      %at, AT7
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f31, %f30
+	add.s   %f31, %f31, %f29
+	li      %at, AT5
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f31, %f30
+	add.s   %f31, %f31, %f29
+	li      %at, AT3
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f31, %f30
+	add.s   %f31, %f31, %f29
+	li      %at, AT1
+	add     %at, %at, %gp
+	lw.s    %f29, (%at)
+	mul.s   %f31, %f31, %f30
+	add.s   %f31, %f31, %f29
+	mul.s   %f1, %f31, %f1
+	jr      %ra
+
+.globl min_caml_atan
+min_caml_atan:
+	li      %t1, $1
+	li      %t2, $0  # sign
+	subi    %sp, %sp, $1
+	sw      %ra, (%sp)
+	jal     min_caml_fabs
+	# [atan] reduction
+	li      %at, ATAN_THR1
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	c.lt.s  %f1, %f31
+	bclf    atan.0
+	jal     kernel_atan
+	j       atan.2
+atan.0:
+	li      %at, ATAN_THR2
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	c.lt.s  %f1, %f31
+	bclf    atan.1
+	li      %at, AT1
+	add     %at, %at, %gp
+	lw.s    %f30, (%at)
+	add.s   %f31, %f1, %f30
+	inv.s   %f31, %f31
+	sub.s   %f1, %f1, %f30
+	mul.s   %f1, %f1, %f31
+	jal     kernel_atan
+	li      %at, Q_PI
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	add.s   %f1, %f1, %f31
+	j       atan.2
+atan.1:
+	inv.s   %f1, %f1
+	jal     kernel_atan
+	li      %at, D_PI
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	sub.s   %f1, %f31, %f1
+atan.2:
+	beq     %t2, %zero, atan.3
+	sub.s   %f1, %f0, %f1
+atan.3:
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
+	jr      %ra
+
 .globl min_caml_fabs
 min_caml_fabs:
 	c.lt.s  %f0, %f1
