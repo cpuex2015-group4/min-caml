@@ -320,16 +320,18 @@ fabs.1:
 	jr      %ra
 
 .data
-ITOF_OFFSET:
+FLOAT_THR:
 	.long   0x4b000000
+FLOAT_THRI:
+	.long   0x00800000
 
 .text
-.globl min_caml_int_of_float
-min_caml_int_of_float:
-	li      %at, ITOF_OFFSET
+.globl min_caml_float_of_int
+min_caml_float_of_int:
+	li      %at, FLOAT_THR
 	add     %at, %at, %gp
 	lw.s    %f31, (%at)
-	lw      %t9, ITOF_OFFSET
+	lw      %t9, FLOAT_THR
 	slt     %at, %t0, %t9
 	bne     %at, %zero, itof.1
 	add.s   %f1, %f0, %f31
@@ -345,4 +347,27 @@ itof.1:
 	sw      %t0, -1(%sp)
 	lw.s    %f1, -1(%sp)
 	sub.s   %f1, %f1, %f31
+	jr      %ra
+
+.text
+.globl min_caml_int_of_float
+min_caml_int_of_float:
+	li      %at, FLOAT_THR
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	lw      %t9, FLOAT_THR
+	lw      %t8, FLOAT_THRI
+	li      %t7, $0
+ftoi.0:
+	c.lt.s  %f1, %f31
+	bclt    ftoi.1
+	sub.s   %f1, %f1, %f31
+	add     %t7, %t7, %t8
+	j       ftoi.0
+ftoi.1:
+	add.s   %f1, %f1, %f31
+	sw.s    %f1, -1(%sp)
+	lw      %v0, -1(%sp)
+	sub     %v0, %v0, %t9
+	add     %v0, %v0, %t7
 	jr      %ra
