@@ -310,10 +310,39 @@ atan.3:
 	addi    %sp, %sp, $1
 	jr      %ra
 
+.text
 .globl min_caml_fabs
 min_caml_fabs:
 	c.lt.s  %f0, %f1
 	bclt    fabs.1
 	sub.s   %f1, %f0, %f1
 fabs.1:
+	jr      %ra
+
+.data
+ITOF_OFFSET:
+	.long   0x4b000000
+
+.text
+.globl min_caml_int_of_float
+min_caml_int_of_float:
+	li      %at, ITOF_OFFSET
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	lw      %t9, ITOF_OFFSET
+	slt     %at, %t0, %t9
+	bne     %at, %zero, itof.1
+	add.s   %f1, %f0, %f31
+	sub     %t0, %t0, %t9
+itof.0:
+	slt     %at, %t0, %t9
+	bne     %at, %zero, itof.1
+	add.s   %f1, %f1, %f31
+	sub     %t0, %t0, %t9
+	j       itof.0
+itof.1:
+	add     %t0, %t0, %t9
+	sw      %t0, -1(%sp)
+	lw.s    %f1, -1(%sp)
+	sub.s   %f1, %f1, %f31
 	jr      %ra
