@@ -258,8 +258,13 @@ kernel_atan:
 
 .globl min_caml_atan
 min_caml_atan:
-	li      %t1, $1
-	li      %t2, $0  # sign
+	c.le.s  %f1, %zero
+	bclt    atan_neg.0
+	li      %t2, $0
+	j       atan_neg.1
+atan_neg.0:
+	li      %t2, $1
+atan_neg.1:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
 	jal     min_caml_fabs
@@ -293,7 +298,7 @@ atan.0:
 atan.1:
 	inv.s   %f1, %f1
 	jal     kernel_atan
-	li      %at, D_PI
+	li      %at, H_PI
 	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	sub.s   %f1, %f31, %f1
