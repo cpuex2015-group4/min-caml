@@ -8,6 +8,8 @@ and exp =
   | SetL of Id.l
   | Mov of Id.t
   | Neg of Id.t
+  | Mul of Id.t * id_or_imm
+  | Div of Id.t * id_or_imm
   | Add of Id.t * id_or_imm
   | Sub of Id.t * id_or_imm
   | Ld of Id.t * id_or_imm

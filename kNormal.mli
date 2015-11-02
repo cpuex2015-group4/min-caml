@@ -3,6 +3,8 @@ type t =
   | Int of int
   | Float of float
   | Neg of Id.t
+  | Mul of Id.t * Id.t
+  | Div of Id.t * Id.t
   | Add of Id.t * Id.t
   | Sub of Id.t * Id.t
   | FNeg of Id.t

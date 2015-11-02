@@ -12,6 +12,8 @@ let rec print_syntax' expr nest =
   match expr with
   | (Not(e),_) -> printf "NOT\n"; print_syntax' e (nest+1)
   | (Neg(e),_) -> printf "NEG\n"; print_syntax' e (nest+1)
+  | (Mul(e1, e2),_) -> printf "MUL\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
+  | (Div(e1, e2),_) -> printf "DIV\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
   | (Add(e1, e2),_) -> printf "ADD\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
   | (Sub(e1, e2),_) -> printf "SUB\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
   | (Eq(e1, e2),_) -> printf "EQ\n"; print_syntax' e1 (nest+1); print_syntax' e2 (nest+1);
@@ -67,6 +69,8 @@ let rec print_knormal' expr nest =
   | Int(i) -> printf "INT %d\n" i
   | Float(d) -> printf "FLOAT %f\n" d
   | Neg(x) -> printf "NEG %s\n" x
+  | Mul(x, y) -> printf "MUL %s %s\n" x y
+  | Div(x, y) -> printf "DIV %s %s\n" x y
   | Add(x, y) -> printf "ADD %s %s\n" x y
   | Sub(x, y) -> printf "SUB %s %s\n" x y
   | FNeg(x) -> printf "FNEG %s\n" x
@@ -124,6 +128,10 @@ let print_asmprog prog =
     | Asm.SetL(Id.L(x)) -> printf "\tSETL %s\n" x
     | Asm.Mov(x) -> printf "\tMOV %s\n" x
     | Asm.Neg(x) -> printf "\tNEG %s\n" x
+    | Asm.Mul(x, V(y)) -> printf "\tMUL %s, %s\n" x y
+    | Asm.Mul(x, C(i)) -> printf "\tMULI %s, %d\n" x i
+    | Asm.Div(x, V(y)) -> printf "\tDIV %s, %s\n" x y
+    | Asm.Div(x, C(i)) -> printf "\tDIVI %s, %d\n" x i
     | Asm.Add(x, V(y)) -> printf "\tADD %s, %s\n" x y
     | Asm.Add(x, C(i)) -> printf "\tADDI %s, %d\n" x i
     | Asm.Sub(x, V(y)) -> printf "\tSUB %s, %s\n" x y

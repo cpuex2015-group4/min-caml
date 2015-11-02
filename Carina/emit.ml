@@ -57,6 +57,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       if x <> y then Printf.fprintf oc "\tmove    %s, %s\n" x y
   | NonTail(x), Neg(y) ->
       Printf.fprintf oc "\tsub     %s, %s, %s\n" x reg_zero y
+  | NonTail(x), Mul(y, z') ->
+      (match z' with
+      | V(z) -> Printf.fprintf oc "\tmult    %s, %s, %s\n" x y z
+      | C(i) -> Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
+                Printf.fprintf oc "\tmult    %s, %s, %s\n" x y reg_tmp)
+  | NonTail(x), Div(y, z') ->
+      (match z' with
+      | V(z) -> Printf.fprintf oc "\tdiv     %s, %s, %s\n" x y z
+      | C(i) -> Printf.fprintf oc "\tli      %s, $%d\n" reg_tmp i;
+                Printf.fprintf oc "\tdiv     %s, %s, %s\n" x y reg_tmp)
   | NonTail(x), Add(y, z') ->
       (match z' with
       | V(z) -> Printf.fprintf oc "\tadd     %s, %s, %s\n" x y z
@@ -130,7 +140,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
-  | Tail, (Set _ | SetL _ | Mov _ | Neg _ | Add _ | Sub _ | Ld _ as exp) ->
+  | Tail, (Set _ | SetL _ | Mov _ | Neg _ | Mul _ | Div _ | Add _ | Sub _ | Ld _ as exp) ->
       g' oc (NonTail(reg_rv), exp);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (FMovD _ | FNegD _ | FAddD _ | FSubD _ | FMulD _ | FDivD _ | LdDF _  as exp) ->

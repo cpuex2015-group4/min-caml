@@ -11,6 +11,10 @@ let rec is_common_subexpr env1 e1 env2 e2 =
    * - 識別子が同じ
    * 場合に同じ部分式と判定 *)
   | Neg(x1), Neg(x2) -> is_same_id env1 x1 env2 x2
+  | Mul(x1, y1), Mul(x2, y2) ->
+      (is_same_id env1 x1 env1 x2) && (is_same_id env1 y1 env2 y2)
+  | Div(x1, y1), Div(x2, y2) ->
+      (is_same_id env1 x1 env1 x2) && (is_same_id env1 y1 env2 y2)
   | Add(x1, y1), Add(x2, y2) ->
       (is_same_id env1 x1 env1 x2) && (is_same_id env1 y1 env2 y2)
   | Sub(x1, y1), Sub(x2, y2) ->
@@ -84,6 +88,8 @@ let rec g env = function
   | Int(i) -> Int(i)
   | Float(f) -> Float(f)
   | Neg(x) -> Neg(x)
+  | Mul(x, y) -> Mul(x, y)
+  | Div(x, y) -> Div(x, y)
   | Add(x, y) -> Add(x, y)
   | Sub(x, y) -> Sub(x, y)
   | FNeg(x) -> FNeg(x)
