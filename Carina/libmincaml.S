@@ -370,9 +370,32 @@ ftoi.0:
 	add     %t7, %t7, %t8
 	j       ftoi.0
 ftoi.1:
-	add.s   %f1, %f1, %f31
+	add.s   %f1, %f1, %f30
 	sw.s    %f1, -1(%sp)
 	lw      %v0, -1(%sp)
 	sub     %v0, %v0, %t9
 	add     %v0, %v0, %t7
+	jr      %ra
+
+.text
+.globl min_caml_truncate
+min_caml_truncate:
+	j       min_caml_floor
+
+.text
+.globl min_caml_floor
+min_caml_floor:
+	li      %at, FLOAT_THR
+	add     %at, %at, %gp
+	lw.s    %f31, (%at)
+	c.lt.s  %f1, %f31
+	bclf    floor.0
+	subi    %sp, %sp, $1
+	sw      %ra, (%sp)
+	jal     min_caml_int_of_float
+	move    %t0, %v0
+	jal     min_caml_float_of_int
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
+floor.0:
 	jr      %ra
