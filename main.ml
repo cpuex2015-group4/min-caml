@@ -53,7 +53,10 @@ let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file
   try
     while true do
       let line = input_line inchan in
-      stream := String.concat "\n" [!stream; line]
+      if !stream = "" then
+        stream := line
+      else
+        stream := String.concat "\n" [!stream; line]
     done
   with End_of_file -> ();
   try
