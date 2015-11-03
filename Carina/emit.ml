@@ -109,11 +109,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\tdiv.s   %s, %s, %s\n" x y z
   | NonTail(x), LdDF(y, V(z)) ->
       (Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp y z;
-       Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp reg_tmp reg_hp;
        Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_tmp)
   | NonTail(x), LdDF(y, C(j)) ->
       (Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_tmp y j;
-       Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp reg_tmp reg_hp;
        Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_tmp)
   | NonTail(_), StDF(x, y, V(z)) ->
       (Printf.fprintf oc "\tadd     %s, %s, %s\n" reg_tmp y z;

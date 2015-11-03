@@ -32,20 +32,16 @@ kernel_sin:
 	mul.s   %f30, %f1, %f1
 	sub.s   %f30, %f0, %f30
 	li      %at, S5
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	li      %at, S7
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f29, %f29, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, S3
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, S1
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
@@ -56,41 +52,34 @@ kernel_cos:
 	mul.s   %f30, %f1, %f1
 	sub.s   %f30, %f0, %f30
 	li      %at, C6
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f29, %f30
 	li      %at, C4
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	add.s   %f31, %f31, %f29
 	mul.s   %f31, %f31, %f30
 	li      %at, C2
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	add.s   %f31, %f31, %f29
 	mul.s   %f31, %f31, %f30
 	li      %at, C0
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	add.s   %f1, %f31, %f29
 	jr      %ra
 
 reduction:
 	li      %at, D_PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	move.s  %f30, %f31
 reduction.0:
 	c.le.s  %f31, %f1
 	bclf    reduction.1
 	li      %at, TWO
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f29
 	j       reduction.0
 reduction.1:
 	li      %at, HALF
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 reduction.2:
 	c.le.s  %f30, %f1
@@ -120,7 +109,6 @@ sin_neg.1:
 	jal     reduction
 	# [sin] reduction-II
 	li      %at, PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.le.s  %f31, %f1
 	bclf    sin.0
@@ -128,14 +116,12 @@ sin_neg.1:
 	sub     %t2, %t1, %t2
 sin.0:
 	li      %at, H_PI
-	add     %at, %at, %gp
 	lw.s    %f30, (%at)
 	c.le.s  %f30, %f1
 	bclf    sin.1
 	sub.s   %f1, %f31, %f1
 sin.1:
 	li      %at, Q_PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.le.s  %f1, %f31
 	bclf    sin.2
@@ -163,7 +149,6 @@ min_caml_cos:
 	jal     reduction
 	# [cos] reduction-II
 	li      %at, PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.le.s  %f31, %f1
 	bclf    cos.0
@@ -171,7 +156,6 @@ min_caml_cos:
 	sub     %t2, %t1, %t2
 cos.0:
 	li      %at, H_PI
-	add     %at, %at, %gp
 	lw.s    %f30, (%at)
 	c.le.s  %f30, %f1
 	bclf    cos.1
@@ -179,7 +163,6 @@ cos.0:
 	sub     %t2, %t1, %t2
 cos.1:
 	li      %at, Q_PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.le.s  %f1, %f31
 	bclf    cos.2
@@ -221,35 +204,28 @@ kernel_atan:
 	mul.s   %f30, %f1, %f1
 	sub.s   %f30, %f0, %f30
 	li      %at, AT13
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f30, %f29
 	li      %at, AT11
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	add.s   %f31, %f31, %f29
 	li      %at, AT9
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, AT7
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, AT5
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, AT3
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
 	li      %at, AT1
-	add     %at, %at, %gp
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
@@ -270,7 +246,6 @@ atan_neg.1:
 	jal     min_caml_fabs
 	# [atan] reduction
 	li      %at, ATAN_THR1
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.lt.s  %f1, %f31
 	bclf    atan.0
@@ -278,12 +253,10 @@ atan_neg.1:
 	j       atan.2
 atan.0:
 	li      %at, ATAN_THR2
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.lt.s  %f1, %f31
 	bclf    atan.1
 	li      %at, AT1
-	add     %at, %at, %gp
 	lw.s    %f30, (%at)
 	add.s   %f31, %f1, %f30
 	inv.s   %f31, %f31
@@ -291,7 +264,6 @@ atan.0:
 	mul.s   %f1, %f1, %f31
 	jal     kernel_atan
 	li      %at, Q_PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	add.s   %f1, %f1, %f31
 	j       atan.2
@@ -299,7 +271,6 @@ atan.1:
 	inv.s   %f1, %f1
 	jal     kernel_atan
 	li      %at, H_PI
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	sub.s   %f1, %f31, %f1
 atan.2:
@@ -331,7 +302,6 @@ FLOAT_THRI:
 .globl min_caml_float_of_int
 min_caml_float_of_int:
 	li      %at, FLOAT_THR
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	lw      %t9, FLOAT_THR
 	slt     %at, %t0, %t9
@@ -355,10 +325,8 @@ itof.1:
 .globl min_caml_int_of_float
 min_caml_int_of_float:
 	li      %at, FLOAT_THR
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	li      %at, FLOAT_THR2
-	add     %at, %at, %gp
 	lw.s    %f30, (%at)
 	lw      %t9, FLOAT_THR
 	lw      %t8, FLOAT_THRI
@@ -386,7 +354,6 @@ min_caml_truncate:
 .globl min_caml_floor
 min_caml_floor:
 	li      %at, FLOAT_THR
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	c.lt.s  %f1, %f31
 	bclf    floor.0
@@ -404,7 +371,6 @@ floor.0:
 .globl min_caml_sqrt
 min_caml_sqrt:
 	li      %at, HALF
-	add     %at, %at, %gp
 	lw.s    %f31, (%at)
 	mul.s   %f30, %f1, %f31
 	li      %t0, $10
