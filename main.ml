@@ -49,10 +49,17 @@ let spec = ref lexbuf
 let file f = (* ファイルをコンパイルしてファイルに出力する (caml2html: main_file) *)
   let inchan = open_in (f ^ ".ml") in
   let outchan = open_out (f ^ ".s") in
+  let stream = ref "" in
   try
-    let lexbuf = (Lexing.from_channel inchan) in
+    while true do
+      let line = input_line inchan in
+      stream := String.concat "\n" [!stream; line]
+    done
+  with End_of_file -> ();
+  try
+    let lexbuf = (Lexing.from_string !stream) in
     (* エラー出力用に入力ファイルの内容をバッファに保存する *)
-    Exception.buffer := Lexing.(lexbuf.lex_buffer);
+    Exception.buffer := Bytes.of_string !stream;
     !spec outchan lexbuf;
     close_in inchan;
     close_out outchan;
