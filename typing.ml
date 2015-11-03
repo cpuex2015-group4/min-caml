@@ -160,7 +160,18 @@ let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
         (Type.of_string t2) (Type.of_string t1)))
 
 let f opt e =
-  extenv := M.empty;
+  (* extern function type *)
+  extenv :=
+    M.add "sin" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "cos" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "atan" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "fabs" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "float_of_int" (Type.Fun ([Type.Int], Type.Float)) (
+    M.add "int_of_float" (Type.Fun ([Type.Float], Type.Int)) (
+    M.add "truncate" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "floor" (Type.Fun ([Type.Float], Type.Float)) (
+    M.add "sqrt" (Type.Fun ([Type.Float], Type.Float)) (
+      M.empty)))))))));
 (*
   (match deref_typ (g M.empty e) with
   | Type.Unit -> ()
