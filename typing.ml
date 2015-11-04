@@ -161,17 +161,17 @@ let rec g env exp = (* 型推論ルーチン (caml2html: typing_g) *)
 
 let f opt e =
   (* extern function type *)
-  extenv :=
-    M.add "sin" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "cos" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "atan" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "fabs" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "float_of_int" (Type.Fun ([Type.Int], Type.Float)) (
-    M.add "int_of_float" (Type.Fun ([Type.Float], Type.Int)) (
-    M.add "truncate" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "floor" (Type.Fun ([Type.Float], Type.Float)) (
-    M.add "sqrt" (Type.Fun ([Type.Float], Type.Float)) (
-      M.empty)))))))));
+  extenv := M.add_list [
+    ("sin", (Type.Fun ([Type.Float], Type.Float))); 
+    ("cos", (Type.Fun ([Type.Float], Type.Float)));
+    ("atan", (Type.Fun ([Type.Float], Type.Float)));
+    ("fabs", (Type.Fun ([Type.Float], Type.Float)));
+    ("float_of_int", (Type.Fun ([Type.Int], Type.Float)));
+    ("int_of_float", (Type.Fun ([Type.Float], Type.Int)));
+    ("truncate", (Type.Fun ([Type.Float], Type.Float)));
+    ("floor", (Type.Fun ([Type.Float], Type.Float)));
+    ("sqrt", (Type.Fun ([Type.Float], Type.Float)))
+  ] M.empty;
 (*
   (match deref_typ (g M.empty e) with
   | Type.Unit -> ()
