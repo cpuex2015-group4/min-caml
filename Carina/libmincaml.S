@@ -3,6 +3,96 @@ TWO:  # 2.0
 	.long 0x40000000
 HALF:  # 0.5
 	.long 0x3f000000
+
+.text
+.globl min_caml_fequal
+min_caml_fequal:
+	c.eq.s  %f1, %f2
+	bclt    fequal.0
+	li      %v0, $0
+	jr      %ra
+fequal.0:
+	li      %v0, $1
+	jr      %ra
+
+.globl min_caml_fless
+min_caml_fless:
+	c.lt.s  %f1, %f2
+	bclt    fless.0
+	li      %v0, $0
+	jr      %ra
+fless.0:
+	li      %v0, $1
+	jr      %ra
+
+.globl min_caml_fispos
+min_caml_fispos:
+	c.lt.s  %f0, %f1
+	bclt    fispos.0
+	li      %v0, 0
+	jr      %ra
+fispos.0:
+	li      %v0, 1
+	jr      %ra
+
+.globl min_caml_fisneg
+min_caml_fisneg:
+	c.lt.s  %f1, %f0
+	bclt    fisneg.0
+	li      %v0, 0
+	jr      %ra
+fisneg.0:
+	li      %v0, 1
+	jr      %ra
+
+.globl min_caml_fiszero
+min_caml_fiszero:
+	c.eq.s  %f1, %f0
+	bclt    fiszero.0
+	li      %v0, 0
+	jr      %ra
+fiszero.0:
+	li      %v0, 1
+	jr      %ra
+
+.globl min_caml_fhalf
+min_caml_fhalf:
+	li      %at, HALF
+	lw.s    %f31, (%at)
+	mul.s   %f1, %f1, %f31
+	jr      %ra
+
+.globl min_caml_fsqr
+min_caml_fsqr:
+	mul.s   %f1, %f1, %f1
+	jr      %ra
+
+.globl min_caml_fneg
+min_caml_fneg:
+	sub.s   %f1, %f0, %f1
+	jr      %ra
+
+# TODO
+.globl min_caml_read_float
+min_caml_read_float:
+	jr      %ra
+
+# TODO
+.globl min_caml_read_int
+min_caml_read_int:
+	jr      %ra
+
+# TODO
+.globl min_caml_print_char
+min_caml_print_char:
+	jr      %ra
+
+# TODO
+.globl min_caml_print_int
+min_caml_print_int:
+	jr      %ra
+	
+.data
 PI:  # pi
 	.long 0x40490fdb
 D_PI:  # 2*pi
