@@ -29,30 +29,30 @@ fless.0:
 min_caml_fispos:
 	c.lt.s  %f0, %f1
 	bclt    fispos.0
-	li      %v0, 0
+	li      %v0, $0
 	jr      %ra
 fispos.0:
-	li      %v0, 1
+	li      %v0, $1
 	jr      %ra
 
 .globl min_caml_fisneg
 min_caml_fisneg:
 	c.lt.s  %f1, %f0
 	bclt    fisneg.0
-	li      %v0, 0
+	li      %v0, $0
 	jr      %ra
 fisneg.0:
-	li      %v0, 1
+	li      %v0, $1
 	jr      %ra
 
 .globl min_caml_fiszero
 min_caml_fiszero:
 	c.eq.s  %f1, %f0
 	bclt    fiszero.0
-	li      %v0, 0
+	li      %v0, $0
 	jr      %ra
 fiszero.0:
-	li      %v0, 1
+	li      %v0, $1
 	jr      %ra
 
 .globl min_caml_fhalf
