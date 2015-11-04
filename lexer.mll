@@ -81,6 +81,8 @@ rule token = parse
     { IDENT(Id.gentmp Type.Unit) }
 | "Array.create" (* [XX] ad hoc *)
     { ARRAY_CREATE }
+| "create_array" (* [XX] ad hoc *)
+    { ARRAY_CREATE }
 | '.'
     { DOT }
 | "<-"
