@@ -311,15 +311,15 @@ and g'_args oc x_reg_cl ys zs =
        Printf.fprintf oc "\taddi    %s, %s $%d\n" reg_sp reg_sp 1)
     else
       (* avoiding both operands being register-relative *)
-      if String.sub src 0 1 != "%" && String.sub dst 0 1 != "%" then
+      if String.sub src 0 1 <> "%" && String.sub dst 0 1 <> "%" then
         (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
          Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst)
-      else if String.sub src 0 1 != "%" then
-        (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
-         Printf.fprintf oc "\tmove    %s, %s\n" dst reg_tmp)
-      else if String.sub dst 0 1 != "%" then
-        (Printf.fprintf oc "\tmove    %s, %s\n" reg_tmp src;
-         Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst)
+      else if String.sub src 0 1 <> "%" then
+        (Printf.fprintf oc "\tlw.s    %%f31, %s\n" src;
+         Printf.fprintf oc "\tmove.s  %s, %%f31\n" dst)
+      else if String.sub dst 0 1 <> "%" then
+        (Printf.fprintf oc "\tmove.s  %%f31, %s\n" src;
+         Printf.fprintf oc "\tsw.s    %%f31, %s\n" dst)
       else
         Printf.fprintf oc "\tmove.s  %s, %s\n" dst src
   in List.iter fmove_inst (shuffle sw zfrs)
