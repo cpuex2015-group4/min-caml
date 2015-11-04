@@ -219,7 +219,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       let ss = stacksize () in
       Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       Printf.fprintf oc "\tsw      %s, (%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\tjal     *(%s)\n" reg_cl;
+      Printf.fprintf oc "\tjr      %s\n" reg_cl;
       Printf.fprintf oc "\tlw      %s, (%s)\n" reg_ra reg_sp;
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       if List.mem a allregs && a <> reg_rv then
