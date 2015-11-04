@@ -46,9 +46,7 @@ let string s = lexbuf stdout (Lexing.from_string s) (* Ê¸»úÎó¤ò¥³¥ó¥Ñ¥¤¥ë¤·¤ÆÉ¸½
 (* ÂÐ¾Ý¥Õ¥¡¥¤¥ë¤ËÅ¬ÍÑ¤¹¤ë´Ø¿ô(¥Ç¥Õ¥©¥ë¥È¤Ï¥³¥ó¥Ñ¥¤¥ë´Ø¿ôlexbuf) *)
 let spec = ref lexbuf
 
-let file f = (* ¥Õ¥¡¥¤¥ë¤ò¥³¥ó¥Ñ¥¤¥ë¤·¤Æ¥Õ¥¡¥¤¥ë¤Ë½ÐÎÏ¤¹¤ë (caml2html: main_file) *)
-  let inchan = open_in (f ^ ".ml") in
-  let outchan = open_out (f ^ ".s") in
+let read_lines inchan = 
   let stream = ref "" in
   try
     while true do
@@ -57,8 +55,13 @@ let file f = (* ¥Õ¥¡¥¤¥ë¤ò¥³¥ó¥Ñ¥¤¥ë¤·¤Æ¥Õ¥¡¥¤¥ë¤Ë½ÐÎÏ¤¹¤ë (caml2html: main_file
         stream := line
       else
         stream := String.concat "\n" [!stream; line]
-    done
-  with End_of_file -> ();
+    done; !stream
+  with End_of_file -> (); !stream
+
+let file f = (* ¥Õ¥¡¥¤¥ë¤ò¥³¥ó¥Ñ¥¤¥ë¤·¤Æ¥Õ¥¡¥¤¥ë¤Ë½ÐÎÏ¤¹¤ë (caml2html: main_file) *)
+  let inchan = open_in (f ^ ".ml") in
+  let outchan = open_out (f ^ ".s") in
+  let stream = ref (read_lines inchan) in
   try
     let lexbuf = (Lexing.from_string !stream) in
     (* ¥¨¥é¡¼½ÐÎÏÍÑ¤ËÆþÎÏ¥Õ¥¡¥¤¥ë¤ÎÆâÍÆ¤ò¥Ð¥Ã¥Õ¥¡¤ËÊÝÂ¸¤¹¤ë *)
