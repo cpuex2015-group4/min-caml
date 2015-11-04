@@ -390,6 +390,7 @@ sqrt.1:
 .globl min_caml_create_array
 min_caml_create_array:
 	move    %t9, %gp
+	move    %v0, %gp
 	add     %gp, %gp, %t0
 create_array.0:
 	beq     %t0, %zero, create_array.1
@@ -404,6 +405,7 @@ create_array.1:
 .globl min_caml_create_float_array
 min_caml_create_float_array:
 	move    %t9, %gp
+	move    %v0, %gp
 	add     %gp, %gp, %t0
 create_array.0:
 	beq     %t0, %zero, create_array.1
