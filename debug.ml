@@ -112,6 +112,7 @@ let rec print_knormal' expr nest =
     print_knormal' e (nest+1))
   | Get(x, y) -> printf "GET %s %s\n" x y
   | Put(x, y, z) -> printf "GET %s %s %s\n" x y z
+  | ExtVar(x, t) -> printf "EXTVAR %s\n" x
   | ExtArray(x) -> printf "EXTARRAY %s\n" x
   | ExtFunApp(x, ys) -> (
     printf "EXTFUNAPP %s ( " x;

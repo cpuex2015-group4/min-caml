@@ -117,6 +117,7 @@ let rec g env = function
   | LetTuple(xs, x, e) -> LetTuple(xs, x, g env e)
   | Get(x, y) -> Get(x, y)
   | Put(x, y, z) -> Put(x, y, z)
+  | ExtVar(x, t) -> ExtVar(x, t)
   | ExtArray(x) -> ExtArray(x)
   | ExtFunApp(x, ys) -> ExtFunApp(x, ys)
 
