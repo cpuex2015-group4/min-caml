@@ -291,17 +291,38 @@ and g'_args oc x_reg_cl ys zs =
       Printf.fprintf oc "\tmove    %s, %s\n" dst src
     else if not (List.mem src allfregs) then
       (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-       Printf.fprintf oc "\tsw      %s, (%s)\n" src reg_sp;
+       if String.sub src 0 1 = "%" then
+         Printf.fprintf oc "\tsw      %s, (%s)\n" src reg_sp
+       else
+         (* avoiding both operands being register-relative *)
+         (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
+          Printf.fprintf oc "\tsw      %s, (%s)\n" reg_tmp reg_sp);
        Printf.fprintf oc "\tlw.s    %s, (%s)\n" dst reg_sp;
        Printf.fprintf oc "\taddi    %s, %s $%d\n" reg_sp reg_sp 1)
     else if not (List.mem dst allfregs) then
       (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
        Printf.fprintf oc "\tsw.s    %s, (%s)\n" src reg_sp;
-       Printf.fprintf oc "\tlw      %s, (%s)\n" dst reg_sp;
+       if String.sub dst 0 1 = "%" then
+         Printf.fprintf oc "\tlw      %s, (%s)\n" dst reg_sp
+       else
+         (* avoiding both operands being register-relative *)
+         (Printf.fprintf oc "\tlw      %s, (%s)\n" reg_tmp reg_sp;
+          Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst);
        Printf.fprintf oc "\taddi    %s, %s $%d\n" reg_sp reg_sp 1)
     else
-      Printf.fprintf oc "\tmove.s  %s, %s\n" dst src in
-  List.iter fmove_inst (shuffle sw zfrs)
+      (* avoiding both operands being register-relative *)
+      if String.sub src 0 1 != "%" && String.sub dst 0 1 != "%" then
+        (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
+         Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst)
+      else if String.sub src 0 1 != "%" then
+        (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
+         Printf.fprintf oc "\tmove    %s, %s\n" dst reg_tmp)
+      else if String.sub dst 0 1 != "%" then
+        (Printf.fprintf oc "\tmove    %s, %s\n" reg_tmp src;
+         Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst)
+      else
+        Printf.fprintf oc "\tmove.s  %s, %s\n" dst src
+  in List.iter fmove_inst (shuffle sw zfrs)
 
 let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
   Printf.fprintf oc "%s:\n" x;
