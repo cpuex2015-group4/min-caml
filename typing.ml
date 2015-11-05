@@ -170,7 +170,11 @@ let f opt e =
     ("int_of_float", (Type.Fun ([Type.Float], Type.Int)));
     ("truncate", (Type.Fun ([Type.Float], Type.Float)));
     ("floor", (Type.Fun ([Type.Float], Type.Float)));
-    ("sqrt", (Type.Fun ([Type.Float], Type.Float)))
+    ("sqrt", (Type.Fun ([Type.Float], Type.Float)));
+    ("print_int", (Type.Fun ([Type.Int], Type.Unit)));
+    ("print_char", (Type.Fun ([Type.Int], Type.Unit)));
+    ("read_int", (Type.Fun ([Type.Unit], Type.Int)));
+    ("read_float", (Type.Fun ([Type.Unit], Type.Float)))
   ] M.empty;
 (*
   (match deref_typ (g M.empty e) with
