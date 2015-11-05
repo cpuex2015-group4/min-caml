@@ -59,17 +59,17 @@ fiszero.0:
 min_caml_fhalf:
 	li      %at, HALF
 	lw.s    %f31, (%at)
-	mul.s   %f1, %f1, %f31
+	mul.s   %f2, %f1, %f31
 	jr      %ra
 
 .globl min_caml_fsqr
 min_caml_fsqr:
-	mul.s   %f1, %f1, %f1
+	mul.s   %f2, %f1, %f1
 	jr      %ra
 
 .globl min_caml_fneg
 min_caml_fneg:
-	sub.s   %f1, %f0, %f1
+	sub.s   %f2, %f0, %f1
 	jr      %ra
 
 # Reference:
@@ -129,7 +129,7 @@ read_float.1:
 	j       read_float.0
 read_float.integral:
 	jal     float_of_int
-	move.s  %f30, %f1  # integral part
+	move.s  %f30, %f2  # integral part
 read_float.2:
 	in      %t0
 	li      %at, $47
@@ -140,14 +140,14 @@ read_float.2:
 	beq     %at, %zero, read_float.end
 	subi    %t0, %t0, $48
 	jal     float_of_int
-	add.s   %f29, %f29, %f1
+	add.s   %f29, %f29, %f2
 	mul.s   %f29, %f28, %f29
 	j       read_float.2
 read_float.end:
-	add.s   %f1, %f29, %f30
+	add.s   %f2, %f29, %f30
 	subi    %t6, %t6, $1
 	bne     %t6, %zero, read_float.end2
-	sub     %f31, %f0, %f31
+	sub     %f2, %f0, %f2
 read_float.end2:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
@@ -279,7 +279,7 @@ kernel_sin:
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
-	mul.s   %f1, %f31, %f1
+	mul.s   %f2, %f31, %f1
 	jr      %ra
 
 kernel_cos:
@@ -298,7 +298,7 @@ kernel_cos:
 	mul.s   %f31, %f31, %f30
 	li      %at, C0
 	lw.s    %f29, (%at)
-	add.s   %f1, %f31, %f29
+	add.s   %f2, %f31, %f29
 	jr      %ra
 
 reduction:
@@ -325,12 +325,14 @@ reduction.4:
 	mul.s   %f31, %f31, %f29
 	j       reduction.2
 reduction.3:
+	move.s  %f2, %f1
 	jr      %ra
 
 .globl min_caml_sin
 min_caml_sin:
 	c.le.s  %f1, %zero
 	bclt    sin_neg.0
+	li      %t1, $1
 	li      %t2, $0
 	j       sin_neg.1
 sin_neg.0:
@@ -339,8 +341,10 @@ sin_neg.1:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
 	jal     min_caml_fabs
+	move.s  %f1, %f2
 	# [sin] reduction-I
 	jal     reduction
+	move.s  %f1, %f2
 	# [sin] reduction-II
 	li      %at, PI
 	lw.s    %f31, (%at)
@@ -366,7 +370,7 @@ sin.2:
 	jal     kernel_cos
 sin.3:
 	beq     %t2, %zero, sin.4
-	sub.s   %f1, %f0, %f1
+	sub.s   %f2, %f0, %f2
 sin.4:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
@@ -379,8 +383,10 @@ min_caml_cos:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
 	jal     min_caml_fabs
+	move.s  %f1, %f2
 	# [cos] reduction-I
 	jal     reduction
+	move.s  %f1, %f2
 	# [cos] reduction-II
 	li      %at, PI
 	lw.s    %f31, (%at)
@@ -407,7 +413,7 @@ cos.2:
 	jal     kernel_sin
 cos.3:
 	beq     %t2, %zero, cos.4
-	sub.s   %f1, %f0, %f1
+	sub.s   %f2, %f0, %f2
 cos.4:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
@@ -463,7 +469,7 @@ kernel_atan:
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f31, %f30
 	add.s   %f31, %f31, %f29
-	mul.s   %f1, %f31, %f1
+	mul.s   %f2, %f31, %f1
 	jr      %ra
 
 .globl min_caml_atan
@@ -478,6 +484,7 @@ atan_neg.1:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
 	jal     min_caml_fabs
+	move.s  %f1, %f2
 	# [atan] reduction
 	li      %at, ATAN_THR1
 	lw.s    %f31, (%at)
@@ -499,17 +506,17 @@ atan.0:
 	jal     kernel_atan
 	li      %at, Q_PI
 	lw.s    %f31, (%at)
-	add.s   %f1, %f1, %f31
+	add.s   %f2, %f2, %f31
 	j       atan.2
 atan.1:
 	inv.s   %f1, %f1
 	jal     kernel_atan
 	li      %at, H_PI
 	lw.s    %f31, (%at)
-	sub.s   %f1, %f31, %f1
+	sub.s   %f2, %f31, %f2
 atan.2:
 	beq     %t2, %zero, atan.3
-	sub.s   %f1, %f0, %f1
+	sub.s   %f2, %f0, %f2
 atan.3:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
@@ -522,6 +529,7 @@ min_caml_fabs:
 	bclt    fabs.1
 	sub.s   %f1, %f0, %f1
 fabs.1:
+	move.s  %f2, %f1
 	jr      %ra
 
 .data
@@ -553,7 +561,7 @@ itof.1:
 	add     %t0, %t0, %t9
 	sw      %t0, -1(%sp)
 	lw.s    %f1, -1(%sp)
-	sub.s   %f1, %f1, %f31
+	sub.s   %f2, %f1, %f31
 	jr      %ra
 
 .text
@@ -619,7 +627,7 @@ sqrt.0:
 	subi    %t0, %t0, $1
 	j       sqrt.0
 sqrt.1:
-	move.s  %f1, %f30
+	move.s  %f2, %f30
 	jr      %ra
 
 .text
