@@ -90,10 +90,76 @@ div10:
 	srl     %v0, %v0, $3
 	jr      %ra
 
-# TODO
+.data
+BASE:
+	.long   0x3dcccccd
+
+.text
 .globl min_caml_read_float
 min_caml_read_float:
+	sw      %ra, -1(%sp)
+	subi    %sp, %sp, $1
+	move.s  %f31, %f0 # result
+	li      %t0, $0   # integral part
+	move.s  %f29, %f0 # decimal  part
+	li      %at, BASE
+	lw.s    %f28, (%at)
+	li      %t6, $0   # sign: +
+	in      %t9
+	subi    %at, %t9, $45  # '-'
+	bne     %at, %zero, read_float.1
+	li      %t6, $1   # sign: -
+read_float.0:
+	in      %t9
+read_float.1:
+	subi    %at, %t9, $46  # '.'
+	beq     %at, %zero, read_float.integral
+	li      %at, $47
+	slt     %at, %at, %t9
+	beq     %at, %zero, read_float.abort
+	li      %at, $58
+	slt     %at, %t9, %at
+	beq     %at, %zero, read_float.abort
+	subi    %t9, %t9, $48
+	# mul10 = sll3 + sll1
+	sll     %t8, %t0, $3
+	sll     %t7, %t0, $1
+	add     %t8, %t7, %t8
+	add     %t0, %t8, %t9
+	j       read_float.0
+read_float.integral:
+	jal     float_of_int
+	move.s  %f30, %f1  # integral part
+read_float.2:
+	in      %t0
+	li      %at, $47
+	slt     %at, %at, %t0
+	beq     %at, %zero, read_float.end
+	li      %at, $58
+	slt     %at, %t0, %at
+	beq     %at, %zero, read_float.end
+	subi    %t0, %t0, $48
+	# mul10 = sll3 + sll1
+	sll     %t8, %t0, $3
+	sll     %t7, %t0, $1
+	add     %t8, %t7, %t8
+	add     %t0, %t8, %t9
+	jal     float_of_int
+	add.s   %f29, %f29, %f1
+	mul.s   %f29, %f28, %f29
+	j       read_float.2
+read_float.end:
+	add.s   %f1, %f29, %f30
+	subi    %t6, %t6, $1
+	bne     %t6, %zero, read_float.end2
+	sub     %f31, %f0, %f31
+read_float.end2:
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
+	hlt     # TODO: debug
 	jr      %ra
+read_float.abort:
+	hlt
 
 .globl min_caml_read_int
 min_caml_read_int:
@@ -114,8 +180,8 @@ read_int.1:
 	beq     %at, %zero, read_int.end
 	subi    %t9, %t9, $48
 	# mul10 = sll3 + sll1
-	sll     %t8, %v0, 3
-	sll     %t7, %v0, 1
+	sll     %t8, %v0, $3
+	sll     %t7, %v0, $1
 	add     %t8, %t7, %t8
 	add     %v0, %t8, %t9
 	j       read_int.0
@@ -474,6 +540,7 @@ FLOAT_THRI:
 
 .text
 .globl min_caml_float_of_int
+float_of_int:
 min_caml_float_of_int:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
