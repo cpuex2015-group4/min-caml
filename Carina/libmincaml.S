@@ -139,11 +139,6 @@ read_float.2:
 	slt     %at, %t0, %at
 	beq     %at, %zero, read_float.end
 	subi    %t0, %t0, $48
-	# mul10 = sll3 + sll1
-	sll     %t8, %t0, $3
-	sll     %t7, %t0, $1
-	add     %t8, %t7, %t8
-	add     %t0, %t8, %t9
 	jal     float_of_int
 	add.s   %f29, %f29, %f1
 	mul.s   %f29, %f28, %f29
@@ -156,7 +151,6 @@ read_float.end:
 read_float.end2:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
-	hlt     # TODO: debug
 	jr      %ra
 read_float.abort:
 	hlt
