@@ -544,7 +544,7 @@ float_of_int:
 min_caml_float_of_int:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
-	lw      %t9, FLOAT_THR
+	lw      %t9, (%at)
 	slt     %at, %t0, %t9
 	bne     %at, %zero, itof.1
 	add.s   %f1, %f0, %f31
@@ -567,10 +567,11 @@ itof.1:
 min_caml_int_of_float:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
+	lw      %t9, (%at)
 	li      %at, FLOAT_THR2
 	lw.s    %f30, (%at)
-	lw      %t9, FLOAT_THR
-	lw      %t8, FLOAT_THRI
+	li      %at, FLOAT_THRI
+	lw      %t8, (%at)
 	li      %t7, $0
 ftoi.0:
 	c.lt.s  %f1, %f31
