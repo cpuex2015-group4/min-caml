@@ -109,6 +109,14 @@ min_caml_print_char:
 min_caml_print_int:
 	subi    %sp, %sp, $1
 	sw      %ra, (%sp)
+	slt     %at, %t0, %zero
+	beq     %at, %zero, print_int_neg.0
+	j       print_int_neg.1:
+print_int_neg.0:
+	li      %t9, $45  # '-'
+	out     %t9
+	sub     %t0, %zero, %t0
+print_int_neg.1:
 	beq     %t0, %zero, print_int.0
 	jal     print_int.1
 	j       print_int.end
