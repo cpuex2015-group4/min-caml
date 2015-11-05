@@ -51,6 +51,7 @@ val reg_fsw : Id.t
 *)
 val reg_ra : Id.t  (* return address *)
 val reg_rv : Id.t  (* return value *)
+val reg_frv : Id.t  (* return value *)
 val reg_hp : Id.t
 val reg_sp : Id.t  (* stack pointer *)
 val reg_fp : Id.t  (* frame pointer *)

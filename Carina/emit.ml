@@ -143,16 +143,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g' oc (NonTail(reg_rv), exp);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (FMovD _ | FNegD _ | FAddD _ | FSubD _ | FMulD _ | FDivD _ | LdDF _  as exp) ->
-      g' oc (NonTail(fregs.(0)), exp);
-      Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-      Printf.fprintf oc "\tsw.s    %s, (%s)\n" fregs.(0) reg_sp;
-      Printf.fprintf oc "\tlw      %s, (%s)\n" reg_rv reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1;
+      g' oc (NonTail(reg_frv), exp);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, (Restore(x) as exp) ->
       (match locate x with
       | [i] -> g' oc (NonTail(reg_rv), exp)
-      | [i; j] when i + 1 = j -> g' oc (NonTail(fregs.(0)), exp)
+      | [i; j] when i + 1 = j -> g' oc (NonTail(reg_frv), exp)
       | _ -> assert false);
       Printf.fprintf oc "\tjr      %s\n" reg_ra;
   | Tail, IfEq(x, V(y), e1, e2) ->
