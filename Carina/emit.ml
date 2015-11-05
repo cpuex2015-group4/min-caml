@@ -87,7 +87,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
        Printf.fprintf oc "\tsw      %s, %d(%s)\n" x j y
   | NonTail(x), FMovD(y) ->
       if x <> y then
-        if List.mem x allfregs then
+        if List.mem x allfregs || x = reg_frv then
           (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
            Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
            Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_sp;
@@ -125,7 +125,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
       save y;
       Printf.fprintf oc "\tsw      %s, %d(%s)\n" x (offset y) reg_sp
-  | NonTail(_), Save(x, y) when List.mem x allfregs && not (S.mem y !stackset) ->
+  | NonTail(_), Save(x, y) when (List.mem x allfregs || x = reg_frv) && not (S.mem y !stackset) ->
       savef y;
       Printf.fprintf oc "\tsw.s    %s, %d(%s)\n" x (offset y) reg_sp
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
@@ -133,7 +133,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
       Printf.fprintf oc "\tlw      %s, %d(%s)\n" x (offset y) reg_sp
   | NonTail(x), Restore(y) ->
-      assert (List.mem x allfregs);
+      assert (List.mem x allfregs || x = reg_frv);
       Printf.fprintf oc "\tlw.s    %s, %d(%s)\n" x (offset y) reg_sp
   (* 末尾だったら計算結果を第一レジスタにセットしてret (caml2html: emit_tailret) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
@@ -220,8 +220,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
-      else if List.mem a allfregs && a <> fregs.(0) then
-        Printf.fprintf oc "\tmove.s  %s, %s\n" a fregs.(0)
+      else if List.mem a allfregs then
+        Printf.fprintf oc "\tmove.s  %s, %s\n" a reg_frv
   | NonTail(a), CallDir(Id.L(x), ys, zs) ->
       g'_args oc [] ys zs;
       let ss = stacksize () in
@@ -232,8 +232,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       if List.mem a allregs && a <> reg_rv then
         Printf.fprintf oc "\tmove    %s, %s\n" a reg_rv
-      else if List.mem a allfregs && a <> fregs.(0) then
-        Printf.fprintf oc "\tmove.s  %s, %s\n" a fregs.(0)
+      else if List.mem a allfregs then
+        Printf.fprintf oc "\tmove.s  %s, %s\n" a reg_frv
 and g'_tail_if oc e1 e2 b bn =
   let b_else = Id.genid (b ^ "_else") in
   Printf.fprintf oc "\t%s%s\n" bn b_else;
