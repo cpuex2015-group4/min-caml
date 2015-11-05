@@ -72,6 +72,26 @@ min_caml_fneg:
 	sub.s   %f1, %f0, %f1
 	jr      %ra
 
+# Reference:
+# http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
+# http://www.piclist.com/techref/language/ccpp/convertbase.htm
+.globl min_caml_div10
+min_caml_div10:
+div10:
+	addi    %v0, %t0, $1
+	srl     %v0, %v0, $1
+	add     %v0, %v0, %t0
+	addi    %v0, %v0, $1
+	srl     %v0, %v0, $1
+	srl     %at, %v0, $4
+	add     %v0, %v0, %at
+	srl     %at, %v0, $8
+	add     %v0, %v0, %at
+	srl     %at, %v0, $16
+	add     %v0, %v0, %at
+	srl     %v0, %v0, $3
+	jr      %ra
+
 # TODO
 .globl min_caml_read_float
 min_caml_read_float:
@@ -82,14 +102,48 @@ min_caml_read_float:
 min_caml_read_int:
 	jr      %ra
 
-# TODO
 .globl min_caml_print_char
 min_caml_print_char:
+	out     %t0
 	jr      %ra
 
-# TODO
 .globl min_caml_print_int
 min_caml_print_int:
+	subi    %sp, %sp, $1
+	sw      %ra, (%sp)
+	beq     %t0, %zero, print_int.0
+	jal     print_int.1
+	j       print_int.end
+print_int.1:
+	subi    %sp, %sp, $1
+	sw      %ra, (%sp)
+	beq     %t0, %zero, print_int.2
+	jal     div10
+	# mul10 = sll3 + sll1
+	sll     %t9, %v0, $3
+	sll     %t8, %v0, $1
+	add     %t9, %t9, %t8
+	sub     %t9, %t0, %t9
+	addi    %t9, %t9, $48
+	sw      %t9, -1(%sp)
+	sw      %ra, -2(%sp)
+	subi    %sp, %sp, $2
+	move    %t0, %v0
+	jal     print_int.1
+	addi    %sp, %sp, $2
+	lw      %ra, -2(%sp)
+	lw      %t9, -1(%sp)
+	out     %t9
+print_int.2:
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
+	jr      %ra
+print_int.0:
+	addi    %t0, %t0, $48
+	out     %t0
+print_int.end:
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
 	jr      %ra
 	
 .data
