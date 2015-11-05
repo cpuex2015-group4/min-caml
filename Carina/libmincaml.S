@@ -95,9 +95,35 @@ div10:
 min_caml_read_float:
 	jr      %ra
 
-# TODO
 .globl min_caml_read_int
 min_caml_read_int:
+	li      %v0, $0   # result
+	li      %t6, $0   # sign: +
+	li      %t8, $45  # '-'
+	in      %t9
+	bne     %t8, %t9, read_int.1
+	li      %t6, $1   # sign: -
+read_int.0:
+	in      %t9
+read_int.1:
+	li      %at, $47
+	slt     %at, %at, %t9
+	beq     %at, %zero, read_int.end
+	li      %at, $58
+	slt     %at, %t9, %at
+	beq     %at, %zero, read_int.end
+	subi    %t9, %t9, $48
+	# mul10 = sll3 + sll1
+	sll     %t8, %v0, 3
+	sll     %t7, %v0, 1
+	add     %t8, %t7, %t8
+	add     %v0, %t8, %t9
+	j       read_int.0
+read_int.end:
+	subi    %t6, %t6, $1
+	bne     %t6, %zero, read_int.end2
+	sub     %v0, %zero, %v0
+read_int.end2:
 	jr      %ra
 
 .globl min_caml_print_char
@@ -111,12 +137,10 @@ min_caml_print_int:
 	sw      %ra, (%sp)
 	slt     %at, %t0, %zero
 	beq     %at, %zero, print_int_neg.0
-	j       print_int_neg.1:
-print_int_neg.0:
 	li      %t9, $45  # '-'
 	out     %t9
 	sub     %t0, %zero, %t0
-print_int_neg.1:
+print_int_neg.0:
 	beq     %t0, %zero, print_int.0
 	jal     print_int.1
 	j       print_int.end
