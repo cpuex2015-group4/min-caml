@@ -155,7 +155,10 @@ read_float.end2:
 	addi    %sp, %sp, $1
 	jr      %ra
 read_float.abort:
-	hlt
+	jal     float_of_int
+	lw      %ra, (%sp)
+	addi    %sp, %sp, $1
+	jr      %ra
 
 .globl min_caml_read_int
 min_caml_read_int:
