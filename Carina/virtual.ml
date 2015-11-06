@@ -81,7 +81,7 @@ let rec g env = function (* 式の仮想マシンコード生成 (caml2html: virtual_g) *)
       let offset, store_fv =
 	expand
 	  (List.map (fun y -> (y, M.find y env)) ys)
-	  (4, e2')
+	  (1, e2')
 	  (fun y offset store_fv -> seq(StDF(y, x, C(offset)), store_fv))
 	  (fun y _ offset store_fv -> seq(St(y, x, C(offset)), store_fv)) in
       Let((x, t), Mov(reg_hp),
@@ -141,7 +141,7 @@ let h { Closure.name = (Id.L(x), t); Closure.args = yts; Closure.formal_fv = zts
   let (offset, load) =
     expand
       zts
-      (4, g (M.add x t (M.add_list yts (M.add_list zts M.empty))) e)
+      (1, g (M.add x t (M.add_list yts (M.add_list zts M.empty))) e)
       (fun z offset load -> fletd(z, LdDF(reg_cl, C(offset)), load))
       (fun z t offset load -> Let((z, t), Ld(reg_cl, C(offset)), load)) in
   match t with
