@@ -173,10 +173,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | Tail, IfFEq(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.eq.s  %s, %s\n" x y;
-      g'_tail_if oc e1 e2 "bclt" "bclf"
+      g'_tail_if oc e1 e2 "bclt" "bclf    "
   | Tail, IfFLE(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.le.s  %s, %s\n" x y;
-      g'_tail_if oc e1 e2 "bclt" "bclf"
+      g'_tail_if oc e1 e2 "bclt" "bclf    "
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " x y)
@@ -199,10 +199,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfFEq(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.eq.s  %s, %s\n" x y;
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf"
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf    "
   | NonTail(z), IfFLE(x, y, e1, e2) ->
       Printf.fprintf oc "\tc.le.s  %s, %s\n" x y;
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf"
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf    "
   (* 関数呼び出しの仮想命令の実装 (caml2html: emit_call) *)
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
       g'_args oc [(x, reg_cl)] ys zs;
