@@ -75,9 +75,17 @@ min_caml_fneg:
 # Reference:
 # http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
 # http://www.piclist.com/techref/language/ccpp/convertbase.htm
+.text
 div10:
-	addi    %v0, %t0, $1
-	srl     %v0, %v0, $1
+	sw      %t0, -1(%sp)
+	andi    %at, %t0, $1
+	beq     %at, %zero, div10.0
+	addi    %t0, %t0, $1
+	j       div10.1
+div10.0:
+	addi    %t0, %t0, $2
+div10.1:
+	srl     %v0, %t0, $1
 	add     %v0, %v0, %t0
 	addi    %v0, %v0, $1
 	srl     %v0, %v0, $1
@@ -88,6 +96,7 @@ div10:
 	srl     %at, %v0, $16
 	add     %v0, %v0, %at
 	srl     %v0, %v0, $3
+	lw      %t0, -1(%sp)
 	jr      %ra
 
 .data
