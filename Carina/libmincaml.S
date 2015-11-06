@@ -78,13 +78,6 @@ min_caml_fneg:
 .text
 div10:
 	sw      %t0, -1(%sp)
-	andi    %at, %t0, $1
-	beq     %at, %zero, div10.0
-	addi    %t0, %t0, $1
-	j       div10.1
-div10.0:
-	addi    %t0, %t0, $2
-div10.1:
 	srl     %v0, %t0, $1
 	add     %v0, %v0, %t0
 	addi    %v0, %v0, $1
