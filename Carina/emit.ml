@@ -210,9 +210,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1);
       Printf.fprintf oc "\tsw      %s, (%s)\n" reg_ra reg_sp;
       Printf.fprintf oc "\tlw      %s, (%s)\n" reg_tmp reg_cl;
-      Printf.fprintf oc "\tjr      %s\n" reg_tmp;
-      Printf.fprintf oc "\tlw      %s, (%s)\n" reg_ra reg_sp;
-      Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp (ss + 1)
+      Printf.fprintf oc "\tjr      %s\n" reg_tmp
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
       Printf.fprintf oc "\tj       %s\n" x;
