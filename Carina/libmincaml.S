@@ -77,7 +77,10 @@ min_caml_fneg:
 # http://www.piclist.com/techref/language/ccpp/convertbase.htm
 .text
 div10:
+	# calculate "approximate" int(A/10)
+	# result will be either A/10 or (A+1)/10
 	sw      %t0, -1(%sp)
+div10.0:
 	srl     %v0, %t0, $1
 	add     %v0, %v0, %t0
 	addi    %v0, %v0, $1
@@ -90,6 +93,16 @@ div10:
 	add     %v0, %v0, %at
 	srl     %v0, %v0, $3
 	lw      %t0, -1(%sp)
+	# if result = (A+1)/10 then re-calculate
+	sll     %t9, %v0, $3
+	sll     %t8, %v0, $1
+	add     %t9, %t9, %t8
+	sub     %t9, %t0, %t9
+	slti    %at, %t9, $10
+	bne     %at, %zero, div10.1
+	addi    %t0, %t0, $1
+	j       div10.0
+div10.1:
 	jr      %ra
 
 .data
