@@ -196,6 +196,12 @@ min_caml_print_char:
 	out     %t0
 	jr      %ra
 
+.globl min_caml_print_newline
+min_caml_print_newline:
+	li      %at, $10
+	out     %at
+	jr      %ra
+
 .globl min_caml_print_int
 min_caml_print_int:
 	subi    %sp, %sp, $1
@@ -597,7 +603,7 @@ ftoi.1:
 .text
 .globl min_caml_truncate
 min_caml_truncate:
-	j       min_caml_floor
+	j       min_caml_int_of_float
 
 .text
 .globl min_caml_floor

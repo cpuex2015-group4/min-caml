@@ -168,11 +168,12 @@ let f opt e =
     ("fabs", (Type.Fun ([Type.Float], Type.Float)));
     ("float_of_int", (Type.Fun ([Type.Int], Type.Float)));
     ("int_of_float", (Type.Fun ([Type.Float], Type.Int)));
-    ("truncate", (Type.Fun ([Type.Float], Type.Float)));
+    ("truncate", (Type.Fun ([Type.Float], Type.Int)));
     ("floor", (Type.Fun ([Type.Float], Type.Float)));
     ("sqrt", (Type.Fun ([Type.Float], Type.Float)));
     ("print_int", (Type.Fun ([Type.Int], Type.Unit)));
     ("print_char", (Type.Fun ([Type.Int], Type.Unit)));
+    ("print_newline", (Type.Fun ([Type.Unit], Type.Unit)));
     ("read_int", (Type.Fun ([Type.Unit], Type.Int)));
     ("read_float", (Type.Fun ([Type.Unit], Type.Float)))
   ] M.empty;
