@@ -356,6 +356,6 @@ let f oc (Prog(data, fundefs, e)) =
   Printf.fprintf oc "\t# main program end\n";
   Printf.fprintf oc "\tmove    %s, %s\n" reg_sp reg_fp;
   Printf.fprintf oc "\tlw      %s, 0(%s)\n" reg_fp reg_sp;
-  Printf.fprintf oc "\tlw      %s, -1(%s)\n" reg_ra reg_sp;
+  Printf.fprintf oc "\tlw      %s, 1(%s)\n" reg_ra reg_sp;
   Printf.fprintf oc "\taddi    %s, %s, $2\n" reg_sp reg_sp;
   Printf.fprintf oc "\thlt\n"
