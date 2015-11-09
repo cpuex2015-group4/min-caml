@@ -70,7 +70,8 @@ let rec alloc cont regenv x t prefer =
 	  if is_reg y then S.add y live else
           try S.add (M.find y regenv) live
           with Not_found -> live)
-        S.empty
+        (* Do not use reg_cl as a target register *)
+        (S.singleton reg_cl)
         free in
     let r = (* ¤½¤¦¤Ç¤Ê¤¤¥ì¥¸¥¹¥¿¤òÃµ¤¹ *)
       List.find
@@ -187,7 +188,7 @@ and g'_call dest cont regenv exp constr ys zs = (* ´Ø¿ô¸Æ¤Ó½Ð¤·¤Î¥ì¥¸¥¹¥¿³ä¤êÅö¤
      (Ans(constr
 	    (List.map (fun y -> find y Type.Int regenv) ys)
 	    (List.map (fun z -> find z Type.Float regenv) zs)))
-     (fv cont),
+     (reg_cl::(fv cont)),
    M.empty)
 
 let h { name = Id.L(x); args = ys; fargs = zs; body = e; ret = t } = (* ´Ø¿ô¤Î¥ì¥¸¥¹¥¿³ä¤êÅö¤Æ (caml2html: regalloc_h) *)
