@@ -675,11 +675,11 @@ min_caml_create_float_array:
 	move    %t9, %gp
 	move    %v0, %gp
 	add     %gp, %gp, %t0
-create_array.0:
-	beq     %t0, %zero, create_array.1
+create_float_array.0:
+	beq     %t0, %zero, create_float_array.1
 	sw.s    %f1, (%t9)
 	addi    %t9, %t9, $1
 	subi    %t0, %t0, $1
-	j       create_array.0
-create_array.1:
+	j       create_float_array.0
+create_float_array.1:
 	jr      %ra
