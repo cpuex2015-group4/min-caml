@@ -262,65 +262,20 @@ and g'_args oc x_reg_cl ys zs =
   (* TODO: use %a[i] registers and stack to pass arguments *)
   assert (List.length ys <= Array.length regs - List.length x_reg_cl);
   assert (List.length zs <= Array.length fregs);
-  let sw = Printf.sprintf "%d(%s)" (stacksize ()) reg_sp in
   let (i, yrs) =
     List.fold_left
       (fun (i, yrs) y -> (i + 1, (y, regs.(i)) :: yrs))
       (0, x_reg_cl)
       ys in
-  let move_inst (src, dst) =
-    if not (List.mem src allregs) && not (List.mem dst allregs) then
-      (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
-      Printf.fprintf oc "\tsw      %s, %s\n" dst reg_tmp)
-    else if not (List.mem src allregs) then
-      Printf.fprintf oc "\tlw      %s, %s\n" dst src
-    else if not (List.mem dst allregs) then
-      Printf.fprintf oc "\tsw      %s, %s\n" src dst
-    else
-      Printf.fprintf oc "\tmove    %s, %s\n" dst src in
-  List.iter move_inst (shuffle sw yrs);
+  List.iter (fun (src, dst) -> Printf.fprintf oc "\tmove    %s, %s\n" dst src)
+  (shuffle reg_sw yrs);
   let (d, zfrs) =
     List.fold_left
       (fun (d, zfrs) z -> (d + 1, (z, fregs.(d)) :: zfrs))
       (0, [])
      zs in
-   let fmove_inst (src, dst) =
-    if not (List.mem src allfregs) && not (List.mem dst allfregs) then
-      Printf.fprintf oc "\tmove    %s, %s\n" dst src
-    else if not (List.mem src allfregs) then
-      (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-       if String.sub src 0 1 = "%" then
-         Printf.fprintf oc "\tsw      %s, (%s)\n" src reg_sp
-       else
-         (* avoiding both operands being register-relative *)
-         (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
-          Printf.fprintf oc "\tsw      %s, (%s)\n" reg_tmp reg_sp);
-       Printf.fprintf oc "\tlw.s    %s, (%s)\n" dst reg_sp;
-       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1)
-    else if not (List.mem dst allfregs) then
-      (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-       Printf.fprintf oc "\tsw.s    %s, (%s)\n" src reg_sp;
-       if String.sub dst 0 1 = "%" then
-         Printf.fprintf oc "\tlw      %s, (%s)\n" dst reg_sp
-       else
-         (* avoiding both operands being register-relative *)
-         (Printf.fprintf oc "\tlw      %s, (%s)\n" reg_tmp reg_sp;
-          Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst);
-       Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1)
-    else
-      (* avoiding both operands being register-relative *)
-      if String.sub src 0 1 <> "%" && String.sub dst 0 1 <> "%" then
-        (Printf.fprintf oc "\tlw      %s, %s\n" reg_tmp src;
-         Printf.fprintf oc "\tsw      %s, %s\n" reg_tmp dst)
-      else if String.sub src 0 1 <> "%" then
-        (Printf.fprintf oc "\tlw.s    %%f31, %s\n" src;
-         Printf.fprintf oc "\tmove.s  %s, %%f31\n" dst)
-      else if String.sub dst 0 1 <> "%" then
-        (Printf.fprintf oc "\tmove.s  %%f31, %s\n" src;
-         Printf.fprintf oc "\tsw.s    %%f31, %s\n" dst)
-      else
-        Printf.fprintf oc "\tmove.s  %s, %s\n" dst src
-  in List.iter fmove_inst (shuffle sw zfrs)
+  List.iter (fun (src, dst) -> Printf.fprintf oc "\tmove.s  %s, %s\n" dst src)
+  (shuffle reg_fsw zfrs)
 
 let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
   Printf.fprintf oc "%s:\n" x;
