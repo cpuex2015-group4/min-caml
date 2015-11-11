@@ -76,33 +76,63 @@ min_caml_fneg:
 # http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
 # http://www.piclist.com/techref/language/ccpp/convertbase.htm
 .text
+#div10:
+#	# calculate "approximate" int(A/10)
+#	# result will be either A/10 or (A+1)/10
+#	sw      %t0, -1(%sp)
+#div10.0:
+#	srl     %v0, %t0, $1
+#	add     %v0, %v0, %t0
+#	addi    %v0, %v0, $1
+#	srl     %v0, %v0, $1
+#	srl     %at, %v0, $4
+#	add     %v0, %v0, %at
+#	srl     %at, %v0, $8
+#	add     %v0, %v0, %at
+#	srl     %at, %v0, $16
+#	add     %v0, %v0, %at
+#	srl     %v0, %v0, $3
+#	lw      %t0, -1(%sp)
+#	# if result = (A+1)/10 then re-calculate
+#	sll     %t9, %v0, $3
+#	sll     %t8, %v0, $1
+#	add     %t9, %t9, %t8
+#	sub     %t9, %t0, %t9
+#	slti    %at, %t9, $10
+#	bne     %at, %zero, div10.1
+#	addi    %t0, %t0, $1
+#	j       div10.0
+#div10.1:
+#	jr      %ra
 div10:
-	# calculate "approximate" int(A/10)
-	# result will be either A/10 or (A+1)/10
 	sw      %t0, -1(%sp)
-div10.0:
-	srl     %v0, %t0, $1
-	add     %v0, %v0, %t0
-	addi    %v0, %v0, $1
-	srl     %v0, %v0, $1
-	srl     %at, %v0, $4
-	add     %v0, %v0, %at
-	srl     %at, %v0, $8
-	add     %v0, %v0, %at
-	srl     %at, %v0, $16
-	add     %v0, %v0, %at
-	srl     %v0, %v0, $3
-	lw      %t0, -1(%sp)
-	# if result = (A+1)/10 then re-calculate
-	sll     %t9, %v0, $3
-	sll     %t8, %v0, $1
-	add     %t9, %t9, %t8
-	sub     %t9, %t0, %t9
-	slti    %at, %t9, $10
-	bne     %at, %zero, div10.1
-	addi    %t0, %t0, $1
-	j       div10.0
+	li      %v0, $0
 div10.1:
+	slti    %at, %t0, $10000
+	bne     %at, %zero, div10.2
+	subi    %t0, %t0, $10000
+	addi    %v0, %v0, $1000
+	j       div10.1
+div10.2:
+	slti    %at, %t0, $1000
+	bne     %at, %zero, div10.3
+	subi    %t0, %t0, $1000
+	addi    %v0, %v0, $100
+	j       div10.2
+div10.3:
+	slti    %at, %t0, $100
+	bne     %at, %zero, div10.4
+	subi    %t0, %t0, $100
+	addi    %v0, %v0, $10
+	j       div10.3
+div10.4:
+	slti    %at, %t0, $10
+	bne     %at, %zero, div10.5
+	subi    %t0, %t0, $10
+	addi    %v0, %v0, $1
+	j       div10.3
+div10.5:
+	lw      %t0, -1(%sp)
 	jr      %ra
 
 .data
