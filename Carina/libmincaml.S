@@ -105,34 +105,33 @@ min_caml_fneg:
 #div10.1:
 #	jr      %ra
 div10:
-	sw      %t0, -1(%sp)
+	move    %t1, %t0
 	li      %v0, $0
 div10.1:
-	slti    %at, %t0, $10000
+	slti    %at, %t1, $10000
 	bne     %at, %zero, div10.2
-	subi    %t0, %t0, $10000
+	subi    %t1, %t1, $10000
 	addi    %v0, %v0, $1000
 	j       div10.1
 div10.2:
-	slti    %at, %t0, $1000
+	slti    %at, %t1, $1000
 	bne     %at, %zero, div10.3
-	subi    %t0, %t0, $1000
+	subi    %t1, %t1, $1000
 	addi    %v0, %v0, $100
 	j       div10.2
 div10.3:
-	slti    %at, %t0, $100
+	slti    %at, %t1, $100
 	bne     %at, %zero, div10.4
-	subi    %t0, %t0, $100
+	subi    %t1, %t1, $100
 	addi    %v0, %v0, $10
 	j       div10.3
 div10.4:
-	slti    %at, %t0, $10
+	slti    %at, %t1, $10
 	bne     %at, %zero, div10.5
-	subi    %t0, %t0, $10
+	subi    %t1, %t1, $10
 	addi    %v0, %v0, $1
 	j       div10.3
 div10.5:
-	lw      %t0, -1(%sp)
 	jr      %ra
 
 .data
@@ -142,8 +141,7 @@ BASE:
 .text
 .globl min_caml_read_float
 min_caml_read_float:
-	sw      %ra, -1(%sp)
-	subi    %sp, %sp, $1
+	move    %a0, %ra
 	move.s  %f31, %f0 # result
 	li      %t0, $0   # integral part
 	move.s  %f29, %f0 # decimal  part
@@ -194,13 +192,11 @@ read_float.end:
 	bne     %t6, %zero, read_float.end2
 	sub     %f2, %f0, %f2
 read_float.end2:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 	jr      %ra
 read_float.abort:
 	jal     float_of_int
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 	jr      %ra
 
 .globl min_caml_read_int
@@ -392,8 +388,7 @@ min_caml_sin:
 sin_neg.0:
 	li      %t2, $1
 sin_neg.1:
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
+	move    %a0, %ra
 	jal     min_caml_fabs
 	move.s  %f1, %f2
 	# [sin] reduction-I
@@ -426,16 +421,14 @@ sin.3:
 	beq     %t2, %zero, sin.4
 	sub.s   %f2, %f0, %f2
 sin.4:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 	jr      %ra
 
 .globl min_caml_cos
 min_caml_cos:
 	li      %t1, $1
 	li      %t2, $0  # sign
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
+	move    %a0, %ra
 	jal     min_caml_fabs
 	move.s  %f1, %f2
 	# [cos] reduction-I
@@ -469,8 +462,7 @@ cos.3:
 	beq     %t2, %zero, cos.4
 	sub.s   %f2, %f0, %f2
 cos.4:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 	jr      %ra
 
 .data
@@ -535,8 +527,7 @@ min_caml_atan:
 atan_neg.0:
 	li      %t2, $1
 atan_neg.1:
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
+	move    %a0, %ra
 	jal     min_caml_fabs
 	move.s  %f1, %f2
 	# [atan] reduction
@@ -572,8 +563,7 @@ atan.2:
 	beq     %t2, %zero, atan.3
 	sub.s   %f2, %f0, %f2
 atan.3:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 	jr      %ra
 
 .text
@@ -597,6 +587,7 @@ FLOAT_THRI:
 .text
 .globl min_caml_float_of_int
 float_of_int:
+# CAUTION: DO NOT TOUCH %ra !!
 min_caml_float_of_int:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
@@ -613,13 +604,16 @@ itof.0:
 	j       itof.0
 itof.1:
 	add     %t0, %t0, %t9
-	sw      %t0, -1(%sp)
-	lw.s    %f1, -1(%sp)
+	move    %at, %gp
+	addi    %gp, %gp, $1
+	sw      %t0, (%at)
+	lw.s    %f1, (%at)
 	sub.s   %f2, %f1, %f31
 	jr      %ra
 
 .text
 .globl min_caml_int_of_float
+# CAUTION: DO NOT TOUCH %ra !!
 min_caml_int_of_float:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
@@ -637,8 +631,10 @@ ftoi.0:
 	j       ftoi.0
 ftoi.1:
 	add.s   %f1, %f1, %f30
-	sw.s    %f1, -1(%sp)
-	lw      %v0, -1(%sp)
+	move    %at, %gp
+	addi    %gp, %gp, $1
+	sw.s    %f1, (%at)
+	lw      %v0, (%at)
 	sub     %v0, %v0, %t9
 	add     %v0, %v0, %t7
 	jr      %ra
@@ -655,13 +651,11 @@ min_caml_floor:
 	lw.s    %f31, (%at)
 	c.lt.s  %f1, %f31
 	bclf    floor.0
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
+	move    %a0, %ra
 	jal     min_caml_int_of_float
 	move    %t0, %v0
 	jal     min_caml_float_of_int
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
+	move    %ra, %a0
 floor.0:
 	jr      %ra
 
