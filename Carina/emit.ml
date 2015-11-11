@@ -86,10 +86,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), FMovD(y) ->
       if x <> y then
         if List.mem x allfregs || x = reg_frv then
-          (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
-           Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
-           Printf.fprintf oc "\tlw.s    %s, (%s)\n" x reg_sp;
-           Printf.fprintf oc "\taddi    %s, %s, $%d\n" reg_sp reg_sp 1)
+          Printf.fprintf oc "\tmove.s  %s, %s\n" x y
         else
           (Printf.fprintf oc "\tsubi    %s, %s, $%d\n" reg_sp reg_sp 1;
            Printf.fprintf oc "\tsw.s    %s, (%s)\n" y reg_sp;
