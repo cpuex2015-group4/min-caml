@@ -148,7 +148,13 @@ min_caml_read_float:
 	li      %at, BASE
 	lw.s    %f28, (%at)
 	li      %t6, $0   # sign: +
+read_float.space:
 	in      %t9
+	subi    %at, %t9, $32  # ' '
+	beq     %at, %zero, read_float.space
+	subi    %at, %t9, $10  # '\n'
+	beq     %at, %zero, read_float.space
+read_float.start:
 	subi    %at, %t9, $45  # '-'
 	bne     %at, %zero, read_float.1
 	li      %t6, $1   # sign: -
@@ -204,7 +210,13 @@ min_caml_read_int:
 	li      %v0, $0   # result
 	li      %t6, $0   # sign: +
 	li      %t8, $45  # '-'
+read_int.space:
 	in      %t9
+	subi    %at, %t9, $32  # ' '
+	beq     %at, %zero, read_int.space
+	subi    %at, %t9, $10  # '\n'
+	beq     %at, %zero, read_int.space
+read_int.start:
 	bne     %t8, %t9, read_int.1
 	li      %t6, $1   # sign: -
 read_int.0:
