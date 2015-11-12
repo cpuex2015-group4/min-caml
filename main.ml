@@ -33,13 +33,13 @@ let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   if opt = "knormal" then Debug.knormal r2 else
   let r3 = (Cse.f r2) in
   if opt = "cse" then Debug.cse r3 else
-  let r4 = (RegAlloc.f
+  let r4 = (Closure.f (iter !limit (Alpha.f r3))) in
+  if opt = "closure" then Debug.closure r4 else
+  let r5 = (RegAlloc.f
             (Simm.f
-              (Virtual.f
-                (Closure.f
-            (iter !limit (Alpha.f r3)))))) in
-  if opt = "asm" then Debug.print_asmprog r4 else
-  Emit.f outchan r4
+              (Virtual.f r4))) in
+  if opt = "asm" then Debug.print_asmprog r5 else
+  Emit.f outchan r5
 
 let string s = lexbuf stdout (Lexing.from_string s) (* 文字列をコンパイルして標準出力に表示する (caml2html: main_string) *)
 
@@ -78,7 +78,7 @@ let () = (* ここからコンパイラの実行が開始される (caml2html: main_entry) *)
   Arg.parse
     [("-inline", Arg.Int(fun i -> Inline.threshold := i), "maximum size of functions inlined");
      ("-iter", Arg.Int(fun i -> limit := i), "maximum number of optimizations iterated");
-     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, cse, asm]");
+     ("-debug", Arg.String(fun s -> spec := debug_spec s), "debug print [parser, knormal, cse, closure, asm]");
      ("-W", Arg.String(fun opt -> warning := opt), "warning options [return_unit]")]
     (fun s -> files := !files @ [s])
     ("Mitou Min-Caml Compiler (C) Eijiro Sumii\n" ^

@@ -120,6 +120,75 @@ let rec print_knormal' expr nest =
     print_string ")\n")
 in print_knormal' e 0
 
+let print_closure (Closure.Prog(fds, t)) = 
+  let rec print_closure' expr nest =
+    print_indent nest;
+    match expr with
+    | Closure.Unit -> printf "UNIT\n"
+    | Closure.Int(i) -> printf "INT %d\n" i
+    | Closure.Float(f) -> printf "FLOAT %f\n" f
+    | Closure.Neg(x) -> printf "NEG %s\n" x
+    | Closure.Mul(x, y) -> printf "MUL %s %s\n" x y
+    | Closure.Div(x, y) -> printf "DIV %s %s\n" x y
+    | Closure.Add(x, y) -> printf "ADD %s %s\n" x y
+    | Closure.Sub(x, y) -> printf "SUB %s %s\n" x y
+    | Closure.FNeg(x) -> printf "FNEG %s\n" x
+    | Closure.FAdd(x, y) -> printf "FADD %s %s\n" x y
+    | Closure.FSub(x, y) -> printf "FSUB %s %s\n" x y
+    | Closure.FMul(x, y) -> printf "FMUL %s %s\n" x y
+    | Closure.FDiv(x, y) -> printf "FDIV %s %s\n" x y
+    | Closure.IfEq(x, y, e1, e2) -> (
+      printf "IFEQ %s %s\n" x y;
+      print_closure' e1 (nest+1);
+      print_closure' e2 (nest+1))
+    | Closure.IfLE(x, y, e1, e2) -> (
+      printf "IFLE %s %s\n" x y;
+      print_closure' e1 (nest+1);
+      print_closure' e2 (nest+1))
+    | Closure.Let((x, t), e1, e2) -> (
+        printf "LET %s\n" x;
+      print_closure' e1 (nest+1);
+      print_closure' e2 (nest+1))
+    | Closure.Var(x) -> printf "VAR %s\n" x
+    | Closure.MakeCls((x, t), {
+      Closure.entry = Id.L(xc);
+      Closure.actual_fv = ycs }, tr) -> (
+        printf "MAKECLS %s : %s ( " x xc;
+        List.iter (fun y -> printf "%s " y) ycs;
+        printf ")\n")
+    | Closure.AppCls(t, ys) -> (
+      printf "APPCLS ( ";
+      List.iter (fun y -> printf "%s " y) ys;
+      print_string ")\n")
+    | Closure.AppDir(Id.L(x), ys) -> (
+      printf "APPDIR %s ( " x;
+      List.iter (fun y -> printf "%s " y) ys;
+      print_string ")\n")
+    | Closure.Tuple(xs) -> 
+        print_string "TUPLE ( ";
+      List.iter (fun x -> printf "%s " x) xs;
+      print_string ")"
+    | Closure.LetTuple(xts, y, e) -> (
+      print_string "LETTUPLE ( ";
+      List.iter (fun p -> let (id, t) = p in printf "%s " id) xts;
+      printf ") %s" y;
+      print_closure' e (nest+1))
+    | Closure.Get(x, y) -> printf "GET %s %s\n" x y
+    | Closure.Put(x, y, z) -> printf "PUT %s %s %s\n" x y z
+    | Closure.ExtVar(Id.L(x), t) -> printf "EXTVAR %s\n" x
+    | Closure.ExtArray(Id.L(x)) -> printf "EXTARRAY %s\n" x
+  in
+  let print_fundef
+  { Closure.name = (Id.L(x), t);
+    Closure.args = ys;
+    Closure.formal_fv = zs;
+    Closure.body = e } =
+    printf "#### FUNDEF %s (" x;
+    List.iter (fun (y,t) -> printf " %s" y) ys;
+    print_string " )\n";
+    print_closure' e 0
+  in List.iter (fun fd -> print_fundef fd) fds
+
 let print_asmprog prog =
   let print_data d =
     List.iter (fun (Id.L(id), v) -> printf "\t%10s -> %f\n" id v) d in
@@ -189,3 +258,5 @@ let knormal e =
   print_knormal e
 
 let cse = knormal
+
+let closure e = print_closure e
