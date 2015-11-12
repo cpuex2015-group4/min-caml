@@ -4,7 +4,11 @@ let pc = ref 0
 let global_oc = ref stdout
 
 let emit s =
-  Printf.fprintf (!global_oc) "%s  # %d\n" s !pc;
+  (try
+    let _ = String.index s '#' in
+    Printf.fprintf (!global_oc) "%s  %d\n" s !pc;
+  with Not_found ->
+    Printf.fprintf (!global_oc) "%s  # %d\n" s !pc);
   pc := !pc + 1
 
 external f2bin : float -> int32 = "f2bin"
@@ -126,17 +130,17 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
       save y;
-      emit (Printf.sprintf "\tsw      %s, %d(%s)" x (offset y) reg_sp)
+      emit (Printf.sprintf "\tsw      %s, %d(%s)  # save %s" x (offset y) reg_sp y)
   | NonTail(_), Save(x, y) when (List.mem x allfregs || x = reg_frv) && not (S.mem y !stackset) ->
       savef y;
-      emit (Printf.sprintf "\tsw.s    %s, %d(%s)" x (offset y) reg_sp)
+      emit (Printf.sprintf "\tsw.s    %s, %d(%s)  # save %s" x (offset y) reg_sp y)
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
   (* 復帰の仮想命令の実装 (caml2html: emit_restore) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
-      emit (Printf.sprintf "\tlw      %s, %d(%s)" x (offset y) reg_sp)
+      emit (Printf.sprintf "\tlw      %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
   | NonTail(x), Restore(y) ->
       assert (List.mem x allfregs || x = reg_frv);
-      emit (Printf.sprintf "\tlw.s    %s, %d(%s)" x (offset y) reg_sp)
+      emit (Printf.sprintf "\tlw.s    %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
   (* 末尾だったら計算結果を第一レジスタにセットしてret (caml2html: emit_tailret) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
