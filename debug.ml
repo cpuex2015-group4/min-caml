@@ -156,8 +156,8 @@ let print_closure (Closure.Prog(fds, t)) =
         printf "MAKECLS %s : %s ( " x xc;
         List.iter (fun y -> printf "%s " y) ycs;
         printf ")\n")
-    | Closure.AppCls(t, ys) -> (
-      printf "APPCLS ( ";
+    | Closure.AppCls(x, ys) -> (
+      printf "APPCLS %s ( " x;
       List.iter (fun y -> printf "%s " y) ys;
       print_string ")\n")
     | Closure.AppDir(Id.L(x), ys) -> (
