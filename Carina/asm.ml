@@ -61,7 +61,7 @@ let reg_frv = "%f2" (* return value *)
 let reg_zero = "%zero" (* zero register *)
 let reg_fz = "%f0"
 let is_reg x = (x.[0] = '%' || x = reg_hp)
-let allregs = List.filter (fun x -> x != reg_cl) (Array.to_list regs)
+let allregs = Array.to_list regs
 let allfregs = Array.to_list fregs
 
 (* super-tenuki *)
