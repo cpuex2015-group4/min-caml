@@ -23,6 +23,8 @@
 /shootout/Makefile
 /simm.ml
 /virtual.ml
+/float.c
+/debug.ml
 
 # Project Specific Generated Files
 /lexer.ml
