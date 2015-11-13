@@ -4,12 +4,15 @@ let pc = ref 0
 let global_oc = ref stdout
 
 let emit s =
+  Printf.fprintf (!global_oc) "%s\n" s
+  (*
   (try
     let _ = String.index s '#' in
     Printf.fprintf (!global_oc) "%s  %d\n" s !pc;
   with Not_found ->
     Printf.fprintf (!global_oc) "%s  # %d\n" s !pc);
   pc := !pc + 1
+  *)
 
 external f2bin : float -> int32 = "f2bin"
 
