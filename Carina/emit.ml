@@ -144,14 +144,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
        emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_tmp))
   | NonTail(x), LdDF(y, C(j)) ->
-      (emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_tmp y j);
-       emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tlw.s    %s, %d(%s)" x j y)
   | NonTail(_), StDF(x, y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
        emit (Printf.sprintf "\tsw.s    %s, (%s)" x reg_tmp))
   | NonTail(_), StDF(x, y, C(j)) ->
-      (emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_tmp y j);
-       emit (Printf.sprintf "\tsw.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tsw.s    %s, %d(%s)" x j y)
   | NonTail(_), Comment(s) -> Printf.fprintf oc "\t# %s\n" s
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
