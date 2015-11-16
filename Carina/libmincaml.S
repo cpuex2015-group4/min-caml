@@ -297,6 +297,27 @@ print_int.end:
 	lw      %ra, (%sp)
 	addi    %sp, %sp, $1
 	jr      %ra
+
+.text
+.globl min_caml_print_float
+min_caml_print_float:
+	move    %a0, %ra
+	addi    %gp, %gp, $1
+	sw.s    %f1, -1(%gp)
+	lw      %at, -1(%gp)
+	srl     %at, %at, $24
+	jal     min_caml_print_char
+	lw      %at, -1(%gp)
+	srl     %at, %at, $16
+	jal     min_caml_print_char
+	lw      %at, -1(%gp)
+	srl     %at, %at, $8
+	jal     min_caml_print_char
+	lw      %at, -1(%gp)
+	jal     min_caml_print_char
+	jal     min_caml_print_newline
+	move    %ra, %a0
+	jr      %ra
 	
 .data
 PI:  # pi
