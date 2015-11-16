@@ -603,6 +603,12 @@ FLOAT_THRI:
 float_of_int:
 # CAUTION: DO NOT TOUCH %ra !!
 min_caml_float_of_int:
+	li      %t8, $0
+	slt     %at, %t0, %zero
+	beq     %at, %zero, itof.cont
+	addi    %t8, %t8, $1
+	sub     %t0, %zero, %t0
+itof.cont:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
 	lw      %t9, (%at)
@@ -623,6 +629,9 @@ itof.1:
 	sw      %t0, (%at)
 	lw.s    %f1, (%at)
 	sub.s   %f2, %f1, %f31
+	beq     %t8, %zero, itof.2
+	sub.s   %f2, %f0, %f2
+itof.2:
 	jr      %ra
 
 .text
@@ -631,6 +640,12 @@ min_caml_truncate:
 .globl min_caml_int_of_float
 # CAUTION: DO NOT TOUCH %ra !!
 min_caml_int_of_float:
+	li      %t6, $0
+	c.lt.s  %f1, %f0
+	bclf    ftoi.cont
+	addi    %t6, %t6, $1
+	sub.s   %f1, %f0, %f1
+ftoi.cont:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
 	lw      %t9, (%at)
@@ -653,6 +668,9 @@ ftoi.1:
 	lw      %v0, (%at)
 	sub     %v0, %v0, %t9
 	add     %v0, %v0, %t7
+	beq     %t6, %zero, ftoi.2
+	sub     %v0, %zero, %v0
+ftoi.2:
 	jr      %ra
 
 .text
