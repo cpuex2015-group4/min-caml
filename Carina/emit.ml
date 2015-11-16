@@ -138,8 +138,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), FMulD(y, z) ->
       emit (Printf.sprintf "\tmul.s   %s, %s, %s" x y z)
   | NonTail(x), FDivD(y, z) ->
-      (emit (Printf.sprintf "\tinv.s   %s, %s" z z);
-       emit (Printf.sprintf "\tmul.s   %s, %s, %s" x y z))
+      (emit (Printf.sprintf "\tinv.s   %s, %s" reg_fsw z);
+       emit (Printf.sprintf "\tmul.s   %s, %s, %s" x y reg_fsw))
   | NonTail(x), LdDF(y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
        emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_tmp))
