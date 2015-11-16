@@ -33,26 +33,13 @@ and target src dest = function (* register targeting (caml2html: regalloc_target
       c2, rs1 @ rs2
 and target_args src all n = function (* auxiliary function for Call *)
   | [] -> []
-  | y :: ys when src = y (* && n <= List.length all - 2 *) ->
-      all.(n) :: target_args src all (n + 1) ys
+  | y :: ys when src = y -> all.(n) :: target_args src all (n + 1) ys
   | _ :: ys -> target_args src all (n + 1) ys
-(* "register sourcing" (?) as opposed to register targeting *)
-(* ¡Êx86¤Î2¥ª¥Ú¥é¥ó¥ÉÌ¿Îá¤Î¤¿¤á¤Îregister coalescing¡Ë *)
-let rec source t = function
-  | Ans(exp) -> source' t exp
-  | Let(_, _, e) -> source t e
-and source' t = function
-  | Mov(x) | Neg(x) | Add(x, C _) | Sub(x, _) | FMovD(x) | FNegD(x) | FSubD(x, _) | FDivD(x, _) -> [x]
-  | Add(x, V y) | FAddD(x, y) | FMulD(x, y) -> [x; y]
-  | IfEq(_, _, e1, e2) | IfLE(_, _, e1, e2) | IfGE(_, _, e1, e2) | IfFEq(_, _, e1, e2) | IfFLE(_, _, e1, e2) ->
-      source t e1 @ source t e2
-  | CallCls _ | CallDir _ -> (match t with Type.Unit -> [] | Type.Float -> [fregs.(0)] | _ -> [regs.(0)])
-  | _ -> []
 
 type alloc_result = (* alloc¤Ë¤ª¤¤¤Æspilling¤¬¤¢¤Ã¤¿¤«¤É¤¦¤«¤òÉ½¤¹¥Ç¡¼¥¿·¿ *)
   | Alloc of Id.t (* allocated register *)
   | Spill of Id.t (* spilled variable *)
-let rec alloc cont regenv x t prefer =
+let rec alloc dest cont regenv x t =
   (* allocate a register or spill a variable *)
   assert (not (M.mem x regenv));
   let all =
@@ -64,14 +51,14 @@ let rec alloc cont regenv x t prefer =
   if is_reg x then Alloc(x) else
   let free = fv cont in
   try
+    let (c, prefer) = target x dest cont in
     let live = (* À¸¤­¤Æ¤¤¤ë¥ì¥¸¥¹¥¿ *)
       List.fold_left
         (fun live y ->
 	  if is_reg y then S.add y live else
           try S.add (M.find y regenv) live
           with Not_found -> live)
-        (* Do not use reg_cl as a target register *)
-        (S.singleton reg_cl)
+        S.empty
         free in
     let r = (* ¤½¤¦¤Ç¤Ê¤¤¥ì¥¸¥¹¥¿¤òÃµ¤¹ *)
       List.find
@@ -113,10 +100,7 @@ let rec g dest cont regenv = function (* Ì¿ÎáÎó¤Î¥ì¥¸¥¹¥¿³ä¤êÅö¤Æ (caml2html: re
       assert (not (M.mem x regenv));
       let cont' = concat e dest cont in
       let (e1', regenv1) = g'_and_restore xt cont' regenv exp in
-      let (_call, targets) = target x dest cont' in
-      let sources = source t e1' in
-      (* ¥ì¥¸¥¹¥¿´Ö¤Îmov¤è¤ê¥á¥â¥ê¤ò²ð¤¹¤ëswap¤Î¤Û¤¦¤¬ÌäÂê¤Ê¤Î¤Ç¡¢sources¤è¤êtargets¤òÍ¥Àè *)
-      (match alloc cont' regenv1 x t (targets @ sources) with
+      (match alloc dest cont' regenv1 x t with
       | Spill(y) ->
 	  let r = M.find y regenv1 in
 	  let (e2', regenv2) = g dest cont (add x r (M.remove y regenv1)) e in
@@ -188,7 +172,7 @@ and g'_call dest cont regenv exp constr ys zs = (* ´Ø¿ô¸Æ¤Ó½Ð¤·¤Î¥ì¥¸¥¹¥¿³ä¤êÅö¤
      (Ans(constr
 	    (List.map (fun y -> find y Type.Int regenv) ys)
 	    (List.map (fun z -> find z Type.Float regenv) zs)))
-     (reg_cl::(fv cont)),
+     (fv cont),
    M.empty)
 
 let h { name = Id.L(x); args = ys; fargs = zs; body = e; ret = t } = (* ´Ø¿ô¤Î¥ì¥¸¥¹¥¿³ä¤êÅö¤Æ (caml2html: regalloc_h) *)
