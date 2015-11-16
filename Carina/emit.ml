@@ -63,7 +63,13 @@ let rec g oc = function (* 命令列のアセンブリ生成 (caml2html: emit_g) *)
 and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 末尾でなかったら計算結果をdestにセット (caml2html: emit_nontail) *)
   | NonTail(_), Nop -> emit (Printf.sprintf "\taddi    %s, %s, $0" reg_tmp reg_tmp)
-  | NonTail(x), Set(i) -> emit (Printf.sprintf "\tli      %s, $%d" x i)
+  | NonTail(x), Set(i) when -32768 <= i && i < 32768 ->
+      emit (Printf.sprintf "\tli      %s, $%d" x i)
+  | NonTail(x), Set(i) ->
+      let n = i lsr 16 in
+      let m = i lxor (n lsl 16) in
+	    emit (Printf.sprintf "\tli      %s, $%d\n" x n);
+	    emit (Printf.sprintf "\tori     %s, %s, $%d\n" x x m)
   | NonTail(x), SetL(Id.L(y)) -> emit (Printf.sprintf "\tli      %s, %s" x y)
   | NonTail(x), Mov(y) when x <> y ->
       if List.mem x allregs || x == reg_rv then
