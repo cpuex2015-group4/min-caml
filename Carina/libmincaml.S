@@ -301,22 +301,25 @@ print_int.end:
 .text
 .globl min_caml_print_float
 min_caml_print_float:
-	move    %a0, %ra
 	addi    %gp, %gp, $1
 	sw.s    %f1, -1(%gp)
 	lw      %at, -1(%gp)
 	srl     %at, %at, $24
-	jal     min_caml_print_char
+	andi    %at, %at, $255
+	out     %at
 	lw      %at, -1(%gp)
 	srl     %at, %at, $16
-	jal     min_caml_print_char
+	andi    %at, %at, $255
+	out     %at
 	lw      %at, -1(%gp)
 	srl     %at, %at, $8
-	jal     min_caml_print_char
+	andi    %at, %at, $255
+	out     %at
 	lw      %at, -1(%gp)
-	jal     min_caml_print_char
-	jal     min_caml_print_newline
-	move    %ra, %a0
+	andi    %at, %at, $255
+	out     %at
+	li      %at, $10
+	out     %at
 	jr      %ra
 	
 .data
