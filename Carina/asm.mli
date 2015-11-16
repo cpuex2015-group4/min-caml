@@ -56,6 +56,7 @@ val reg_hp : Id.t
 val reg_sp : Id.t  (* stack pointer *)
 val reg_fp : Id.t  (* frame pointer *)
 val reg_tmp : Id.t
+val reg_atmp : Id.t
 val reg_sw : Id.t
 val reg_fsw : Id.t
 val reg_zero: Id.t (* zero register *)

@@ -65,8 +65,19 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(_), Nop -> emit (Printf.sprintf "\taddi    %s, %s, $0" reg_tmp reg_tmp)
   | NonTail(x), Set(i) -> emit (Printf.sprintf "\tli      %s, $%d" x i)
   | NonTail(x), SetL(Id.L(y)) -> emit (Printf.sprintf "\tli      %s, %s" x y)
-  | NonTail(x), Mov(y) ->
-      if x <> y then emit (Printf.sprintf "\tmove    %s, %s" x y)
+  | NonTail(x), Mov(y) when x <> y ->
+      if List.mem x allregs || x == reg_rv then
+        emit (Printf.sprintf "\tmove    %s, %s" x y)
+      else if List.mem x allfregs || x == reg_frv then
+        (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
+         emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_hp reg_hp 1);
+         emit (Printf.sprintf "\tsw      %s, (%s)" y reg_atmp);
+         emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_atmp);
+         emit (Printf.sprintf "\tsw.s    %%f1, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tmove.s  %%f1, %s" x);
+         emit (Printf.sprintf "\tjal     min_caml_float_of_int");
+         emit (Printf.sprintf "\tlw.s    %%f1, (%s)" reg_atmp))
+  | NonTail(x), Mov(y) -> ()
   | NonTail(x), Neg(y) ->
       emit (Printf.sprintf "\tsub     %s, %s, %s" x reg_zero y)
   | NonTail(x), Mul(y, z') ->
@@ -97,15 +108,20 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
        emit (Printf.sprintf "\tsw      %s, (%s)" x reg_tmp))
   | NonTail(_), St(x, y, C(j)) ->
        emit (Printf.sprintf "\tsw      %s, %d(%s)" x j y)
-  | NonTail(x), FMovD(y) ->
-      if x <> y then
-        if List.mem x allfregs || x = reg_frv then
-          emit (Printf.sprintf "\tmove.s  %s, %s" x y)
-        else
-          (emit (Printf.sprintf "\tmove    %s, %s" reg_tmp reg_hp);
-           emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_hp reg_hp 1);
-           emit (Printf.sprintf "\tsw.s    %s, (%s)" y reg_tmp);
-           emit (Printf.sprintf "\tlw      %s, (%s)" x reg_tmp))
+  | NonTail(x), FMovD(y) when x <> y ->
+      if List.mem x allfregs || x = reg_frv then
+        emit (Printf.sprintf "\tmove.s  %s, %s" x y)
+      else
+        (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
+         emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_hp reg_hp 1);
+         emit (Printf.sprintf "\tsw.s    %s, (%s)" y reg_atmp);
+         emit (Printf.sprintf "\tlw      %s, (%s)" x reg_atmp);
+         emit (Printf.sprintf "\tsw      %%t0, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tmove    %%t0, %s" x);
+         emit (Printf.sprintf "\tjal     min_caml_int_of_float");
+         emit (Printf.sprintf "\tmove    %s, %s" x reg_rv);
+         emit (Printf.sprintf "\tlw      %%t0, (%s)"reg_atmp))
+  | NonTail(x), FMovD(y) -> ()
   | NonTail(x), FNegD(y) ->
       emit (Printf.sprintf "\tsub.s   %s, %s, %s" x reg_zero y)
   | NonTail(x), FAddD(y, z) ->
