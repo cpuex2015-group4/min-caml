@@ -164,9 +164,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_tail_if oc e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " x y)
   | Tail, IfEq(x, C(i), e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $%d" x x i);
+      emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_tmp x i);
       g'_tail_if oc e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " x reg_zero)
+      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | Tail, IfLE(x, y', e1, e2) ->
       emit (Printf.sprintf "\tsubi    %s, %s, $1" reg_tmp x);
       (match y' with
@@ -190,9 +190,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " x y)
   | NonTail(z), IfEq(x, C(i), e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $%d" x x i);
+      emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_tmp x i);
       g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " x reg_zero)
+      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfLE(x, y', e1, e2) ->
       emit (Printf.sprintf "\tsubi    %s, %s, $1" reg_tmp x);
       (match y' with
