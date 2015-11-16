@@ -580,6 +580,8 @@ atan.3:
 
 .text
 .globl min_caml_fabs
+.globl min_caml_abs_float
+min_caml_abs_float:
 min_caml_fabs:
 	c.lt.s  %f0, %f1
 	bclt    fabs.1
@@ -624,6 +626,8 @@ itof.1:
 	jr      %ra
 
 .text
+.globl min_caml_truncate
+min_caml_truncate:
 .globl min_caml_int_of_float
 # CAUTION: DO NOT TOUCH %ra !!
 min_caml_int_of_float:
@@ -650,11 +654,6 @@ ftoi.1:
 	sub     %v0, %v0, %t9
 	add     %v0, %v0, %t7
 	jr      %ra
-
-.text
-.globl min_caml_truncate
-min_caml_truncate:
-	j       min_caml_int_of_float
 
 .text
 .globl min_caml_floor
