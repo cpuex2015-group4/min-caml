@@ -69,6 +69,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       let n = i lsr 16 in
       let m = i lxor (n lsl 16) in
 	    emit (Printf.sprintf "\tli      %s, $%d" x n);
+      emit (Printf.sprintf "\tsll     %s, %s, $%d" x x 16);
 	    emit (Printf.sprintf "\tori     %s, %s, $%d" x x m)
   | NonTail(x), SetL(Id.L(y)) -> emit (Printf.sprintf "\tli      %s, %s" x y)
   | NonTail(x), Mov(y) when x <> y ->
