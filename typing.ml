@@ -175,7 +175,15 @@ let f opt e =
     ("print_char", (Type.Fun ([Type.Int], Type.Unit)));
     ("print_newline", (Type.Fun ([Type.Unit], Type.Unit)));
     ("read_int", (Type.Fun ([Type.Unit], Type.Int)));
-    ("read_float", (Type.Fun ([Type.Unit], Type.Float)))
+    ("read_float", (Type.Fun ([Type.Unit], Type.Float)));
+    ("feqal", (Type.Fun ([Type.Float; Type.Float], Type.Bool)));
+    ("fless", (Type.Fun ([Type.Float; Type.Float], Type.Bool)));
+    ("fispos", (Type.Fun ([Type.Float], Type.Bool)));
+    ("fisneg", (Type.Fun ([Type.Float], Type.Bool)));
+    ("fiszero", (Type.Fun ([Type.Float], Type.Bool)));
+    ("fhalf", (Type.Fun ([Type.Float], Type.Float)));
+    ("fsqr", (Type.Fun ([Type.Float], Type.Float)));
+    ("fneg", (Type.Fun ([Type.Float], Type.Float)))
   ] M.empty;
 (*
   (match deref_typ (g M.empty e) with
