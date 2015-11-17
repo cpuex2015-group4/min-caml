@@ -91,7 +91,7 @@ rule token = parse
     { SEMICOLON }
 | eof
     { EOF }
-| lower (digit|lower|upper|'_')* (* 他の「予約語」より後でないといけない *)
+| lower (digit|lower|upper|'_'|''')* (* 他の「予約語」より後でないといけない *)
     { IDENT(Lexing.lexeme lexbuf) }
 | _
     { raise (Lexing_failure (
