@@ -7,7 +7,7 @@ HALF:  # 0.5
 .text
 .globl min_caml_fequal
 min_caml_fequal:
-	c.eq.s  %f1, %f2
+	c.eq.s  %f1, %f3
 	bclt    fequal.0
 	li      %v0, $0
 	jr      %ra
@@ -17,7 +17,7 @@ fequal.0:
 
 .globl min_caml_fless
 min_caml_fless:
-	c.lt.s  %f1, %f2
+	c.lt.s  %f1, %f3
 	bclt    fless.0
 	li      %v0, $0
 	jr      %ra
