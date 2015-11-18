@@ -341,7 +341,7 @@ S1:
 C0:
 	.long 0x3f800000
 C2:
-	.long 0x3f000000
+	.long 0xbf000000
 C4:
 	.long 0x3d2aa789
 C6:
@@ -350,41 +350,36 @@ C6:
 .text
 kernel_sin:
 	mul.s   %f30, %f1, %f1
-	sub.s   %f30, %f0, %f30
+	li      %at, S7
+	lw.s    %f2, (%at)
 	li      %at, S5
 	lw.s    %f31, (%at)
-	li      %at, S7
-	lw.s    %f29, (%at)
-	mul.s   %f29, %f29, %f30
-	add.s   %f31, %f31, %f29
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, S3
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
-	li      %at, S1
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
-	mul.s   %f2, %f31, %f1
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f1
 	jr      %ra
 
 kernel_cos:
 	mul.s   %f30, %f1, %f1
-	sub.s   %f30, %f0, %f30
 	li      %at, C6
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f29, %f30
+	lw.s    %f2, (%at)
 	li      %at, C4
-	lw.s    %f29, (%at)
-	add.s   %f31, %f31, %f29
-	mul.s   %f31, %f31, %f30
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, C2
-	lw.s    %f29, (%at)
-	add.s   %f31, %f31, %f29
-	mul.s   %f31, %f31, %f30
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, C0
-	lw.s    %f29, (%at)
-	add.s   %f2, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	jr      %ra
 
 reduction:
@@ -416,9 +411,9 @@ reduction.3:
 
 .globl min_caml_sin
 min_caml_sin:
+	li      %t1, $1
 	c.le.s  %f1, %zero
 	bclt    sin_neg.0
-	li      %t1, $1
 	li      %t2, $0
 	j       sin_neg.1
 sin_neg.0:
@@ -524,7 +519,6 @@ AT13:
 .text
 kernel_atan:
 	mul.s   %f30, %f1, %f1
-	sub.s   %f30, %f0, %f30
 	li      %at, AT13
 	lw.s    %f29, (%at)
 	mul.s   %f31, %f30, %f29
