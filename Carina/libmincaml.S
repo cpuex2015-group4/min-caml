@@ -194,16 +194,16 @@ read_float.2:
 	j       read_float.2
 read_float.end:
 	add.s   %f2, %f29, %f30
+read_float.sign:
 	subi    %t6, %t6, $1
 	bne     %t6, %zero, read_float.end2
-	sub     %f2, %f0, %f2
+	sub.s   %f2, %f0, %f2
 read_float.end2:
 	move    %ra, %a0
 	jr      %ra
 read_float.abort:
 	jal     float_of_int
-	move    %ra, %a0
-	jr      %ra
+	j       read_float.sign
 
 .globl min_caml_read_int
 min_caml_read_int:
