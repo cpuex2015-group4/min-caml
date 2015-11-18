@@ -611,8 +611,6 @@ fabs.1:
 .data
 FLOAT_THR:
 	.long   0x4b000000
-FLOAT_THR2:
-	.long   0x4affffff
 FLOAT_THRI:
 	.long   0x00800000
 
@@ -667,8 +665,6 @@ ftoi.cont:
 	li      %at, FLOAT_THR
 	lw.s    %f31, (%at)
 	lw      %t9, (%at)
-	li      %at, FLOAT_THR2
-	lw.s    %f30, (%at)
 	li      %at, FLOAT_THRI
 	lw      %t8, (%at)
 	li      %t7, $0
@@ -679,7 +675,7 @@ ftoi.0:
 	add     %t7, %t7, %t8
 	j       ftoi.0
 ftoi.1:
-	add.s   %f1, %f1, %f30
+	add.s   %f1, %f1, %f31
 	move    %at, %gp
 	addi    %gp, %gp, $1
 	sw.s    %f1, (%at)
