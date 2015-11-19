@@ -360,8 +360,11 @@ kernel_sin:
 	lw.s    %f31, (%at)
 	mul.s   %f2, %f2, %f30
 	add.s   %f2, %f2, %f31
+	li      %at, S1
+	lw.s    %f31, (%at)
 	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f1
+	add.s   %f2, %f2, %f31
+	mul.s   %f2, %f2, %f1
 	jr      %ra
 
 kernel_cos:
