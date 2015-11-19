@@ -172,6 +172,8 @@ let f opt e =
     ("floor", (Type.Fun ([Type.Float], Type.Float)));
     ("sqrt", (Type.Fun ([Type.Float], Type.Float)));
     ("print_int", (Type.Fun ([Type.Int], Type.Unit)));
+    ("print_float", (Type.Fun ([Type.Float], Type.Unit)));
+    ("print_hex32", (Type.Fun ([Type.Int], Type.Unit)));
     ("print_char", (Type.Fun ([Type.Int], Type.Unit)));
     ("print_newline", (Type.Fun ([Type.Unit], Type.Unit)));
     ("read_int", (Type.Fun ([Type.Unit], Type.Int)));
