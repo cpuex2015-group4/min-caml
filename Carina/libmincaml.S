@@ -694,6 +694,9 @@ min_caml_floor:
 	lw.s    %f31, (%at)
 	c.lt.s  %f1, %f31
 	bclf    floor.0
+	li      %at, HALF
+	lw.s    %f31, (%at)
+	sub.s   %f1, %f1, %f31
 	move    %a0, %ra
 	jal     min_caml_int_of_float
 	move    %t0, %v0
