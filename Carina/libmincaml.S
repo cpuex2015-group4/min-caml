@@ -301,25 +301,66 @@ print_int.end:
 .text
 .globl min_caml_print_float
 min_caml_print_float:
+	move    %a0, %ra
 	addi    %gp, %gp, $1
 	sw.s    %f1, -1(%gp)
-	lw      %at, -1(%gp)
-	srl     %at, %at, $24
-	andi    %at, %at, $255
-	out     %at
-	lw      %at, -1(%gp)
-	srl     %at, %at, $16
-	andi    %at, %at, $255
-	out     %at
-	lw      %at, -1(%gp)
-	srl     %at, %at, $8
-	andi    %at, %at, $255
-	out     %at
-	lw      %at, -1(%gp)
-	andi    %at, %at, $255
-	out     %at
-	li      %at, $10
-	out     %at
+	lw      %t0, -1(%gp)
+	move    %t9, %t0
+	srl     %t0, %t0, $28
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $24
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $20
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $16
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $12
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $8
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $4
+	jal     min_caml_print_hex4
+	move    %t0, %t9
+	jal     min_caml_print_hex4
+	jal     min_caml_print_newline
+	move    %ra, %a0
+	jr      %ra
+
+.globl min_caml_print_hex4
+min_caml_print_hex4:
+	andi    %t0, %t0, $15
+	slti    %at, %t0, $10
+	beq     %at, %zero, ph8.0
+	addi    %t0, %t0, $48
+	j       ph8.1
+ph8.0:
+	addi    %t0, %t0, $55
+ph8.1:
+	out     %t0
+	jr      %ra
+
+.globl min_caml_print_hex32
+min_caml_print_hex32:
+	move    %a0, %ra
+	move    %t9, %t0
+	srl     %t0, %t0, $28
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $24
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $20
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $16
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $12
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $8
+	jal     min_caml_print_hex4
+	srl     %t0, %t9, $4
+	jal     min_caml_print_hex4
+	move    %t0, %t9
+	jal     min_caml_print_hex4
+	jal     min_caml_print_newline
+	move    %ra, %a0
 	jr      %ra
 	
 .data
