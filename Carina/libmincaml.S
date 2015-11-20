@@ -751,6 +751,8 @@ floor.0:
 .text
 .globl min_caml_sqrt
 min_caml_sqrt:
+	c.eq.s  %f1, %f0
+	bclt    sqrt.2
 	li      %at, HALF
 	lw.s    %f31, (%at)
 	mul.s   %f30, %f1, %f31
@@ -765,6 +767,9 @@ sqrt.0:
 	j       sqrt.0
 sqrt.1:
 	move.s  %f2, %f30
+	jr      %ra
+sqrt.2:
+	move.s  %f2, %f0
 	jr      %ra
 
 .text
