@@ -564,46 +564,45 @@ AT13:
 kernel_atan:
 	mul.s   %f30, %f1, %f1
 	li      %at, AT13
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f30, %f29
+	lw.s    %f2, (%at)
 	li      %at, AT11
-	lw.s    %f29, (%at)
-	add.s   %f31, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, AT9
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, AT7
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, AT5
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, AT3
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
 	li      %at, AT1
-	lw.s    %f29, (%at)
-	mul.s   %f31, %f31, %f30
-	add.s   %f31, %f31, %f29
-	mul.s   %f2, %f31, %f1
+	lw.s    %f31, (%at)
+	mul.s   %f2, %f2, %f30
+	add.s   %f2, %f2, %f31
+	mul.s   %f2, %f2, %f1
 	jr      %ra
 
 .globl min_caml_atan
 min_caml_atan:
+	move    %a0, %ra
 	c.le.s  %f1, %zero
 	bclt    atan_neg.0
 	li      %t2, $0
 	j       atan_neg.1
 atan_neg.0:
 	li      %t2, $1
+	sub.s   %f1, %f0, %f1
 atan_neg.1:
-	move    %a0, %ra
-	jal     min_caml_fabs
-	move.s  %f1, %f2
 	# [atan] reduction
 	li      %at, ATAN_THR1
 	lw.s    %f31, (%at)
