@@ -756,7 +756,7 @@ min_caml_sqrt:
 	li      %at, HALF
 	lw.s    %f31, (%at)
 	mul.s   %f30, %f1, %f31
-	li      %t0, $5
+	li      %t0, $10
 sqrt.0:
 	beq     %t0, %zero, sqrt.1
 	inv.s   %f29, %f30
