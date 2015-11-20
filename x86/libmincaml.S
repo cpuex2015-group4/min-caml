@@ -37,7 +37,9 @@ min_caml_print_int:
 	popl	%ebp
 	ret
 .globl min_caml_print_byte
+.globl min_caml_print_char
 min_caml_print_byte:
+min_caml_print_char:
 	pushl	%ebp
 	movl	%esp, %ebp
 	ALIGNSTACK1
@@ -233,6 +235,18 @@ min_caml_atan:
 	movsd	%xmm0, (%esp)
 	call	U(atan)
 	fstpl	(%esp)
+	movsd	(%esp), %xmm0
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
+.globl min_caml_fabs
+min_caml_fabs:
+	pushl	%ebp
+	movl	%esp, %ebp
+	ALIGNSTACK2
+	subl	$8, %esp
+	movsd	%xmm0, (%esp)
+	fabs
 	movsd	(%esp), %xmm0
 	movl	%ebp, %esp
 	popl	%ebp
