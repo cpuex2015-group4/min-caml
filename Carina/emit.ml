@@ -88,15 +88,11 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), Neg(y) ->
       emit (Printf.sprintf "\tsub     %s, %s, %s" x reg_zero y)
   | NonTail(x), Mul(y, z') ->
-      (match z' with
-      | V(z) -> emit (Printf.sprintf "\tmult    %s, %s, %s" x y z)
-      | C(i) -> emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
-                emit (Printf.sprintf "\tmult    %s, %s, %s" x y reg_tmp))
+      assert(z' = C(4));
+      emit (Printf.sprintf "\tsll     %s, %s, $%d" x y 2)
   | NonTail(x), Div(y, z') ->
-      (match z' with
-      | V(z) -> emit (Printf.sprintf "\tdiv     %s, %s, %s" x y z)
-      | C(i) -> emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
-                emit (Printf.sprintf "\tdiv     %s, %s, %s" x y reg_tmp))
+      assert(z' = C(2));
+      emit (Printf.sprintf "\tsrl     %s, %s, $%d" x y 1)
   | NonTail(x), Add(y, z') ->
       (match z' with
       | V(z) -> emit (Printf.sprintf "\tadd     %s, %s, %s" x y z)
