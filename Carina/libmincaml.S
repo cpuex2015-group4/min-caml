@@ -680,27 +680,52 @@ min_caml_floor:
 floor.0:
 	jr      %ra
 
+.data
+SQRT_MAGIC:
+	.long   0x5f3759df
+F1_5:
+	.long   0x3fc00000
+
 .text
 .globl min_caml_sqrt
 min_caml_sqrt:
 	c.eq.s  %f1, %f0
-	bclt    sqrt.2
+	bclt    sqrt.zero
+	li      %at, SQRT_MAGIC
+	lw      %t9, (%at)
+	li      %at, F1_5
+	lw.s    %f30, (%at)
 	li      %at, HALF
-	lw.s    %f31, (%at)
-	mul.s   %f30, %f1, %f31
-	li      %t0, $10
-sqrt.0:
-	beq     %t0, %zero, sqrt.1
-	inv.s   %f29, %f30
-	mul.s   %f29, %f29, %f1
-	add.s   %f30, %f30, %f29
-	mul.s   %f30, %f30, %f31
-	subi    %t0, %t0, $1
-	j       sqrt.0
-sqrt.1:
-	move.s  %f2, %f30
+	lw.s    %f29, (%at)
+	# fast inverse square root
+	sw.s    %f1, (%gp)
+	lw      %at, (%gp)
+	srl     %at, %at, $1
+	sub     %at, %t9, %at
+	sw      %at, (%gp)
+	lw.s    %f2, (%gp)
+	# iteration 1
+	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f28, %f29
+	mul.s   %f28, %f28, %f1
+	sub.s   %f28, %f30, %f28
+	mul.s   %f2, %f2, %f28
+	# iteration 2
+	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f28, %f29
+	mul.s   %f28, %f28, %f1
+	sub.s   %f28, %f30, %f28
+	mul.s   %f2, %f2, %f28
+	# iteration 3
+	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f28, %f29
+	mul.s   %f28, %f28, %f1
+	sub.s   %f28, %f30, %f28
+	mul.s   %f2, %f2, %f28
+	# get sqrt from inverse sqrt
+	mul.s   %f2, %f2, %f1
 	jr      %ra
-sqrt.2:
+sqrt.zero:
 	move.s  %f2, %f0
 	jr      %ra
 
