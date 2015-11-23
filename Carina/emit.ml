@@ -309,6 +309,14 @@ let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
   stackmap := [];
   g oc (Tail, e)
 
+let init_sp () =
+  let sp = 1048575 in
+  let n = sp lsr 15 in
+  let m = sp land 0x7fff in
+	emit (Printf.sprintf "\tli      %s, $%d" reg_sp n);
+  emit (Printf.sprintf "\tsll     %s, %s, $%d" reg_sp reg_sp 15);
+	emit (Printf.sprintf "\tori     %s, %s, $%d" reg_sp reg_sp m)
+
 let f oc (Prog(data, fundefs, e)) =
   global_oc := oc;
   Format.eprintf "generating assembly...@.";
@@ -323,6 +331,8 @@ let f oc (Prog(data, fundefs, e)) =
   List.iter (fun fundef -> h oc fundef) fundefs;
   Printf.fprintf oc "_min_caml_start: # main entry point\n";
   Printf.fprintf oc "\t# main program start\n";
+  init_sp ();
+  emit (Printf.sprintf "\tli      %s, min_caml_heap_pointer" reg_hp);
   stackset := S.empty;
   stackmap := [];
   g oc (NonTail(reg_rv), e);
