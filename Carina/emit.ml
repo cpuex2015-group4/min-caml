@@ -172,10 +172,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g' oc (NonTail(reg_frv), exp);
       emit (Printf.sprintf "\tjr      %s" reg_ra)
   | Tail, (Restore(x) as exp) ->
-      (match locate x with
-      | [i] -> g' oc (NonTail(reg_rv), exp)
-      | [i; j] when i + 1 = j -> g' oc (NonTail(reg_frv), exp)
-      | _ -> assert false);
+      (if List.mem x allfregs || x = reg_frv then
+        g' oc (NonTail(reg_frv), exp)
+      else
+        g' oc (NonTail(reg_rv), exp));
       emit (Printf.sprintf "\tjr      %s" reg_ra)
   | Tail, IfEq(x, V(y), e1, e2) ->
       g'_tail_if oc e1 e2 "neq"
