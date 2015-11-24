@@ -77,7 +77,6 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         emit (Printf.sprintf "\tmove    %s, %s" x y)
       else if List.mem x allfregs || x == reg_frv then
         (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_hp reg_hp 1);
          emit (Printf.sprintf "\tsw      %s, (%s)" y reg_atmp);
          emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_atmp);
          emit (Printf.sprintf "\tsw.s    %%f1, (%s)" reg_atmp);
@@ -116,7 +115,6 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         emit (Printf.sprintf "\tmove.s  %s, %s" x y)
       else
         (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_hp reg_hp 1);
          emit (Printf.sprintf "\tsw.s    %s, (%s)" y reg_atmp);
          emit (Printf.sprintf "\tlw      %s, (%s)" x reg_atmp);
          emit (Printf.sprintf "\tsw      %%t0, (%s)" reg_atmp);
