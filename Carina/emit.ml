@@ -83,6 +83,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
          emit (Printf.sprintf "\tmove.s  %%f1, %s" x);
          emit (Printf.sprintf "\tjal     min_caml_float_of_int");
          emit (Printf.sprintf "\tlw.s    %%f1, (%s)" reg_atmp))
+      else assert false
   | NonTail(x), Mov(y) -> ()
   | NonTail(x), Neg(y) ->
       emit (Printf.sprintf "\tsub     %s, %s, %s" x reg_zero y)
