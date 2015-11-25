@@ -20,9 +20,9 @@ let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2htm
 	  (Virtual.f
 	     (Closure.f
 		(iter !limit
-		   (Alpha.f (Cse.f (KNormal.f
+		   (Alpha.f (*(Cse.f*) (KNormal.f
 			 (Typing.f !warning
-			    (Parser.exp Lexer.token l))))))))))
+			    (Parser.exp Lexer.token l)))))))))(*)*)
 
 let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   Id.counter := 0;
@@ -31,8 +31,11 @@ let debug_spec opt outchan l = (* デバッグ出力する (caml2html: debug) *)
   if opt = "parser" then Debug.parse r1 else
   let r2 = (KNormal.f (Typing.f !warning r1)) in
   if opt = "knormal" then Debug.knormal r2 else
+    (*
   let r3 = (Cse.f r2) in
   if opt = "cse" then Debug.cse r3 else
+    *)
+  let r3 = r2 in
   let r4 = (Closure.f (iter !limit (Alpha.f r3))) in
   if opt = "closure" then Debug.closure r4 else
   let r5 = (RegAlloc.f
