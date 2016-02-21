@@ -77,12 +77,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         emit (Printf.sprintf "\tmr      %s, %s" x y)
       else if List.mem x allfregs || x == reg_frv then
         (emit (Printf.sprintf "\tmr      %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\tst      %s, (%s)" y reg_atmp);
-         emit (Printf.sprintf "\tld.s    %s, (%s)" x reg_atmp);
-         emit (Printf.sprintf "\tst.s    %%f1, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tst      %s, %s, $0" y reg_atmp);
+         emit (Printf.sprintf "\tld.s    %s, %s, $0" x reg_atmp);
+         emit (Printf.sprintf "\tst.s    %%f1, %s, $0" reg_atmp);
          emit (Printf.sprintf "\tmr.s    %%f1, %s" x);
          emit (Printf.sprintf "\tjal     min_caml_float_of_int");
-         emit (Printf.sprintf "\tld.s    %%f1, (%s)" reg_atmp))
+         emit (Printf.sprintf "\tld.s    %%f1, %s, $0" reg_atmp))
       else assert false
   | NonTail(x), Mov(y) -> ()
   | NonTail(x), Neg(y) ->
@@ -103,26 +103,26 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       | C(i) -> emit (Printf.sprintf "\tsubi    %s, %s, $%d" x y i))
   | NonTail(x), Ld(y, V(z)) -> 
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tld      %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tld      %s, %s, $0" x reg_tmp))
   | NonTail(x), Ld(y, C(j)) ->
-       emit (Printf.sprintf "\tld      %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tld      %s, %s, $%d" x y j)
   | NonTail(_), St(x, y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tst      %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tst      %s, %s, $0" x reg_tmp))
   | NonTail(_), St(x, y, C(j)) ->
-       emit (Printf.sprintf "\tst      %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tst      %s, %s, $%d" x y j)
   | NonTail(x), FMovD(y) when x <> y ->
       if List.mem x allfregs || x = reg_frv then
         emit (Printf.sprintf "\tmr.s    %s, %s" x y)
       else
         (emit (Printf.sprintf "\tmr      %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\tst.s    %s, (%s)" y reg_atmp);
-         emit (Printf.sprintf "\tld      %s, (%s)" x reg_atmp);
-         emit (Printf.sprintf "\tst      %%t0, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tst.s    %s, %s, $0" y reg_atmp);
+         emit (Printf.sprintf "\tld      %s, %s, $0" x reg_atmp);
+         emit (Printf.sprintf "\tst      %%t0, %s, $0" reg_atmp);
          emit (Printf.sprintf "\tmr      %%t0, %s" x);
          emit (Printf.sprintf "\tjal     min_caml_int_of_float");
          emit (Printf.sprintf "\tmr      %s, %s" x reg_rv);
-         emit (Printf.sprintf "\tld      %%t0, (%s)"reg_atmp))
+         emit (Printf.sprintf "\tld      %%t0, %s, $0"reg_atmp))
   | NonTail(x), FMovD(y) -> ()
   | NonTail(x), FNegD(y) ->
       emit (Printf.sprintf "\tsub.s   %s, %s, %s" x reg_zero y)
@@ -137,29 +137,29 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
        emit (Printf.sprintf "\tmul.s   %s, %s, %s" x y reg_fsw))
   | NonTail(x), LdDF(y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tld.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tld.s    %s, %s, $0" x reg_tmp))
   | NonTail(x), LdDF(y, C(j)) ->
-       emit (Printf.sprintf "\tld.s    %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tld.s    %s, %s, $%d" x y j)
   | NonTail(_), StDF(x, y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tst.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tst.s    %s, %s, $0" x reg_tmp))
   | NonTail(_), StDF(x, y, C(j)) ->
-       emit (Printf.sprintf "\tst.s    %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tst.s    %s, %s, $%d" x y j)
   | NonTail(_), Comment(s) -> Printf.fprintf oc "\t# %s\n" s
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
       save y;
-      emit (Printf.sprintf "\tst      %s, %d(%s)  # save %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tst      %s, %s, $%d  # save %s" x reg_sp (offset y) y)
   | NonTail(_), Save(x, y) when (List.mem x allfregs || x = reg_frv) && not (S.mem y !stackset) ->
       savef y;
-      emit (Printf.sprintf "\tst.s    %s, %d(%s)  # save %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tst.s    %s, %s, $%d  # save %s" x reg_sp (offset y) y)
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
   (* 復帰の仮想命令の実装 (caml2html: emit_restore) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
-      emit (Printf.sprintf "\tld      %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tld      %s, %s, $%d  # restore %s" x reg_sp (offset y) y)
   | NonTail(x), Restore(y) ->
       assert (List.mem x allfregs || x = reg_frv);
-      emit (Printf.sprintf "\tld.s    %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tld.s    %s, %s, $%d  # restore %s" x reg_sp (offset y) y)
   (* 末尾だったら計算結果を第一レジスタにセットしてret (caml2html: emit_tailret) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
@@ -229,7 +229,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   (* 関数呼び出しの仮想命令の実装 (caml2html: emit_call) *)
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
       g'_args oc [(x, reg_cl)] ys zs;
-      emit (Printf.sprintf "\tld      %s, (%s)" reg_tmp reg_cl);
+      emit (Printf.sprintf "\tld      %s, %s, $0" reg_tmp reg_cl);
       emit (Printf.sprintf "\tjr      %s" reg_tmp)
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
@@ -238,10 +238,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
       emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
-      emit (Printf.sprintf "\tst      %s, (%s)" reg_ra reg_sp);
-      emit (Printf.sprintf "\tld      %s, (%s)" reg_tmp reg_cl);
+      emit (Printf.sprintf "\tst      %s, %s, $0" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, %s, $0" reg_tmp reg_cl);
       emit (Printf.sprintf "\tjral    %s" reg_tmp);
-      emit (Printf.sprintf "\tld      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, %s, $0" reg_ra reg_sp);
       emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
       if List.mem a allregs && a <> reg_rv then
         emit (Printf.sprintf "\tmr      %s, %s" a reg_rv)
@@ -251,9 +251,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_args oc [] ys zs;
       let ss = stacksize () in
       emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
-      emit (Printf.sprintf "\tst      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tst      %s, %s, $0" reg_ra reg_sp);
       emit (Printf.sprintf "\tjal     %s" x);
-      emit (Printf.sprintf "\tld      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, %s, $0" reg_ra reg_sp);
       emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
       if List.mem a allregs && a <> reg_rv then
         emit (Printf.sprintf "\tmr      %s, %s" a reg_rv)
@@ -324,9 +324,9 @@ let f oc (Prog(data, fundefs, e)) =
     Printf.fprintf oc "\t.long\t0x%lx\n" (f2bin d))
   data;
   Printf.fprintf oc ".text\n";
-  Printf.fprintf oc "\t.globl  _min_caml_start\n";
+  Printf.fprintf oc "\t.extern _leml_entry\n";
   List.iter (fun fundef -> h oc fundef) fundefs;
-  Printf.fprintf oc "_min_caml_start: # main entry point\n";
+  Printf.fprintf oc "_leml_entry: # main entry point\n";
   Printf.fprintf oc "\t# main program start\n";
   init_sp ();
   emit (Printf.sprintf "\tli      %s, min_caml_heap_pointer" reg_hp);
@@ -334,4 +334,5 @@ let f oc (Prog(data, fundefs, e)) =
   stackmap := [];
   g oc (NonTail(reg_rv), e);
   Printf.fprintf oc "\t# main program end\n";
-  emit (Printf.sprintf "\thlt")
+  emit (Printf.sprintf "\thlt");
+  Printf.fprintf oc "\nmin_caml_heap_pointer:\n"
