@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+ln -sf Aquila/{*.ml{,i},float.c} .
+ln -sf Aquila/lib/*.S .

@@ -25,6 +25,8 @@
 /virtual.ml
 /float.c
 /debug.ml
+/read.S
+/read_bin.S
 
 # Project Specific Generated Files
 /lexer.ml
