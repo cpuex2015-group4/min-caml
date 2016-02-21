@@ -74,15 +74,15 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | NonTail(x), SetL(Id.L(y)) -> emit (Printf.sprintf "\tli      %s, %s" x y)
   | NonTail(x), Mov(y) when x <> y ->
       if List.mem x allregs || x == reg_rv then
-        emit (Printf.sprintf "\tmove    %s, %s" x y)
+        emit (Printf.sprintf "\tmr      %s, %s" x y)
       else if List.mem x allfregs || x == reg_frv then
-        (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\tsw      %s, (%s)" y reg_atmp);
-         emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_atmp);
-         emit (Printf.sprintf "\tsw.s    %%f1, (%s)" reg_atmp);
-         emit (Printf.sprintf "\tmove.s  %%f1, %s" x);
+        (emit (Printf.sprintf "\tmr      %s, %s" reg_atmp reg_hp);
+         emit (Printf.sprintf "\tst      %s, (%s)" y reg_atmp);
+         emit (Printf.sprintf "\tld.s    %s, (%s)" x reg_atmp);
+         emit (Printf.sprintf "\tst.s    %%f1, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tmr.s    %%f1, %s" x);
          emit (Printf.sprintf "\tjal     min_caml_float_of_int");
-         emit (Printf.sprintf "\tlw.s    %%f1, (%s)" reg_atmp))
+         emit (Printf.sprintf "\tld.s    %%f1, (%s)" reg_atmp))
       else assert false
   | NonTail(x), Mov(y) -> ()
   | NonTail(x), Neg(y) ->
@@ -103,26 +103,26 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       | C(i) -> emit (Printf.sprintf "\tsubi    %s, %s, $%d" x y i))
   | NonTail(x), Ld(y, V(z)) -> 
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tlw      %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tld      %s, (%s)" x reg_tmp))
   | NonTail(x), Ld(y, C(j)) ->
-       emit (Printf.sprintf "\tlw      %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tld      %s, %d(%s)" x j y)
   | NonTail(_), St(x, y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tsw      %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tst      %s, (%s)" x reg_tmp))
   | NonTail(_), St(x, y, C(j)) ->
-       emit (Printf.sprintf "\tsw      %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tst      %s, %d(%s)" x j y)
   | NonTail(x), FMovD(y) when x <> y ->
       if List.mem x allfregs || x = reg_frv then
-        emit (Printf.sprintf "\tmove.s  %s, %s" x y)
+        emit (Printf.sprintf "\tmr.s    %s, %s" x y)
       else
-        (emit (Printf.sprintf "\tmove    %s, %s" reg_atmp reg_hp);
-         emit (Printf.sprintf "\tsw.s    %s, (%s)" y reg_atmp);
-         emit (Printf.sprintf "\tlw      %s, (%s)" x reg_atmp);
-         emit (Printf.sprintf "\tsw      %%t0, (%s)" reg_atmp);
-         emit (Printf.sprintf "\tmove    %%t0, %s" x);
+        (emit (Printf.sprintf "\tmr      %s, %s" reg_atmp reg_hp);
+         emit (Printf.sprintf "\tst.s    %s, (%s)" y reg_atmp);
+         emit (Printf.sprintf "\tld      %s, (%s)" x reg_atmp);
+         emit (Printf.sprintf "\tst      %%t0, (%s)" reg_atmp);
+         emit (Printf.sprintf "\tmr      %%t0, %s" x);
          emit (Printf.sprintf "\tjal     min_caml_int_of_float");
-         emit (Printf.sprintf "\tmove    %s, %s" x reg_rv);
-         emit (Printf.sprintf "\tlw      %%t0, (%s)"reg_atmp))
+         emit (Printf.sprintf "\tmr      %s, %s" x reg_rv);
+         emit (Printf.sprintf "\tld      %%t0, (%s)"reg_atmp))
   | NonTail(x), FMovD(y) -> ()
   | NonTail(x), FNegD(y) ->
       emit (Printf.sprintf "\tsub.s   %s, %s, %s" x reg_zero y)
@@ -137,29 +137,29 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
        emit (Printf.sprintf "\tmul.s   %s, %s, %s" x y reg_fsw))
   | NonTail(x), LdDF(y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tlw.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tld.s    %s, (%s)" x reg_tmp))
   | NonTail(x), LdDF(y, C(j)) ->
-       emit (Printf.sprintf "\tlw.s    %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tld.s    %s, %d(%s)" x j y)
   | NonTail(_), StDF(x, y, V(z)) ->
       (emit (Printf.sprintf "\tadd     %s, %s, %s" reg_tmp y z);
-       emit (Printf.sprintf "\tsw.s    %s, (%s)" x reg_tmp))
+       emit (Printf.sprintf "\tst.s    %s, (%s)" x reg_tmp))
   | NonTail(_), StDF(x, y, C(j)) ->
-       emit (Printf.sprintf "\tsw.s    %s, %d(%s)" x j y)
+       emit (Printf.sprintf "\tst.s    %s, %d(%s)" x j y)
   | NonTail(_), Comment(s) -> Printf.fprintf oc "\t# %s\n" s
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
       save y;
-      emit (Printf.sprintf "\tsw      %s, %d(%s)  # save %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tst      %s, %d(%s)  # save %s" x (offset y) reg_sp y)
   | NonTail(_), Save(x, y) when (List.mem x allfregs || x = reg_frv) && not (S.mem y !stackset) ->
       savef y;
-      emit (Printf.sprintf "\tsw.s    %s, %d(%s)  # save %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tst.s    %s, %d(%s)  # save %s" x (offset y) reg_sp y)
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
   (* 復帰の仮想命令の実装 (caml2html: emit_restore) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
-      emit (Printf.sprintf "\tlw      %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tld      %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
   | NonTail(x), Restore(y) ->
       assert (List.mem x allfregs || x = reg_frv);
-      emit (Printf.sprintf "\tlw.s    %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
+      emit (Printf.sprintf "\tld.s    %s, %d(%s)  # restore %s" x (offset y) reg_sp y)
   (* 末尾だったら計算結果を第一レジスタにセットしてret (caml2html: emit_tailret) *)
   | Tail, (Nop | St _ | StDF _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
@@ -184,24 +184,21 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_tail_if oc e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | Tail, IfLE(x, y', e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $1" reg_tmp x);
       (match y' with
-      | V(y) -> emit (Printf.sprintf "\tslt     %s, %s, %s" reg_tmp reg_tmp y)
-      | C(i) -> emit (Printf.sprintf "\tslti    %s, %s, $%d" reg_tmp reg_tmp i));
-      g'_tail_if oc e1 e2 "nle"
-      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
+      | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
+      | C(i) -> (
+        emit (Printf.sprintf "\tli      %s, $%d" reg_atmp i);
+        g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
   | Tail, IfGE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> emit (Printf.sprintf "\tslt     %s, %s, %s" reg_tmp x y)
-      | C(i) -> emit (Printf.sprintf "\tslti    %s, %s, $%d" reg_tmp x i));
-      g'_tail_if oc e1 e2 "nge"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      | V(y) -> g'_tail_if oc e1 e2 "nge" (Printf.sprintf "ble     %s, %s, " y x)
+      | C(i) -> (
+        emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
+        g'_tail_if oc e1 e2 "nge" (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
   | Tail, IfFEq(x, y, e1, e2) ->
-      emit (Printf.sprintf "\tc.eq.s  %s, %s" x y);
-      g'_tail_if oc e1 e2 "bclt" "bclf    "
+      g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tbeq.s   %s, %s, " x y)
   | Tail, IfFLE(x, y, e1, e2) ->
-      emit (Printf.sprintf "\tc.le.s  %s, %s" x y);
-      g'_tail_if oc e1 e2 "bclt" "bclf    "
+      g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tble.s   %s, %s, " x y)
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " x y)
@@ -210,28 +207,29 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
       (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
   | NonTail(z), IfLE(x, y', e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $1" reg_tmp x);
       (match y' with
-      | V(y) -> emit (Printf.sprintf "\tslt     %s, %s, %s" reg_tmp reg_tmp y)
-      | C(i) -> emit (Printf.sprintf "\tslti    %s, %s, $%d" reg_tmp reg_tmp i));
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "nle"
-      (Printf.sprintf "beq     %s, %s, " reg_tmp reg_zero)
+      | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
+      | C(i) -> (
+        emit (Printf.sprintf "\tli      %s, $%d" reg_atmp i);
+        g'_non_tail_if oc (NonTail(z)) e1 e2 "nle"
+        (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
   | NonTail(z), IfGE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> emit (Printf.sprintf "\tslt     %s, %s, %s" reg_tmp x y)
-      | C(i) -> emit (Printf.sprintf "\tslti    %s, %s, $%d" reg_tmp x i));
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "nge"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      | V(y) -> g'_tail_if oc e1 e2 "nge" (Printf.sprintf "ble     %s, %s, " y x)
+      | C(i) -> (
+        emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
+        g'_non_tail_if oc (NonTail(z)) e1 e2 "nge"
+        (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
   | NonTail(z), IfFEq(x, y, e1, e2) ->
-      emit (Printf.sprintf "\tc.eq.s  %s, %s" x y);
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf    "
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt"
+      (Printf.sprintf "\tbeq.s   %s, %s, " x y)
   | NonTail(z), IfFLE(x, y, e1, e2) ->
-      emit (Printf.sprintf "\tc.le.s  %s, %s" x y);
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt" "bclf    "
+      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt"
+      (Printf.sprintf "\tble.s   %s, %s, " x y)
   (* 関数呼び出しの仮想命令の実装 (caml2html: emit_call) *)
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
       g'_args oc [(x, reg_cl)] ys zs;
-      emit (Printf.sprintf "\tlw      %s, (%s)" reg_tmp reg_cl);
+      emit (Printf.sprintf "\tld      %s, (%s)" reg_tmp reg_cl);
       emit (Printf.sprintf "\tjr      %s" reg_tmp)
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
@@ -240,27 +238,27 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
       emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
-      emit (Printf.sprintf "\tsw      %s, (%s)" reg_ra reg_sp);
-      emit (Printf.sprintf "\tlw      %s, (%s)" reg_tmp reg_cl);
+      emit (Printf.sprintf "\tst      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, (%s)" reg_tmp reg_cl);
       emit (Printf.sprintf "\tjral    %s" reg_tmp);
-      emit (Printf.sprintf "\tlw      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, (%s)" reg_ra reg_sp);
       emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
       if List.mem a allregs && a <> reg_rv then
-        emit (Printf.sprintf "\tmove    %s, %s" a reg_rv)
+        emit (Printf.sprintf "\tmr      %s, %s" a reg_rv)
       else if List.mem a allfregs then
-        emit (Printf.sprintf "\tmove.s  %s, %s" a reg_frv)
+        emit (Printf.sprintf "\tmr.s    %s, %s" a reg_frv)
   | NonTail(a), CallDir(Id.L(x), ys, zs) ->
       g'_args oc [] ys zs;
       let ss = stacksize () in
       emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
-      emit (Printf.sprintf "\tsw      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tst      %s, (%s)" reg_ra reg_sp);
       emit (Printf.sprintf "\tjal     %s" x);
-      emit (Printf.sprintf "\tlw      %s, (%s)" reg_ra reg_sp);
+      emit (Printf.sprintf "\tld      %s, (%s)" reg_ra reg_sp);
       emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_sp reg_sp (ss + 1));
       if List.mem a allregs && a <> reg_rv then
-        emit (Printf.sprintf "\tmove    %s, %s" a reg_rv)
+        emit (Printf.sprintf "\tmr      %s, %s" a reg_rv)
       else if List.mem a allfregs then
-        emit (Printf.sprintf "\tmove.s  %s, %s" a reg_frv)
+        emit (Printf.sprintf "\tmr.s    %s, %s" a reg_frv)
 and g'_tail_if oc e1 e2 b bn =
   let b_else = Id.genid (b ^ "_else") in
   emit (Printf.sprintf "\t%s%s" bn b_else);
@@ -292,14 +290,14 @@ and g'_args oc x_reg_cl ys zs =
       (fun (i, yrs) y -> (i + 1, (y, regs.(i)) :: yrs))
       (0, x_reg_cl)
       ys in
-  List.iter (fun (src, dst) -> emit (Printf.sprintf "\tmove    %s, %s" dst src))
+  List.iter (fun (src, dst) -> emit (Printf.sprintf "\tmr      %s, %s" dst src))
   (shuffle reg_sw yrs);
   let (d, zfrs) =
     List.fold_left
       (fun (d, zfrs) z -> (d + 1, (z, fregs.(d)) :: zfrs))
       (0, [])
      zs in
-  List.iter (fun (src, dst) -> emit (Printf.sprintf "\tmove.s  %s, %s" dst src))
+  List.iter (fun (src, dst) -> emit (Printf.sprintf "\tmr.s    %s, %s" dst src))
   (shuffle reg_fsw zfrs)
 
 let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =

@@ -42,26 +42,25 @@ let fletd(x, e1, e2) = Let((x, Type.Float), e1, e2)
 let seq(e1, e2) = Let((Id.gentmp Type.Unit, Type.Unit), e1, e2)
 
 let regs =
-  [| "%t0"; "%t1"; "%t2" ;"%t3"; "%t4"; "%t5"; "%t6"; "%t7"; "%t8"; "%t9";
-     "%s0"; "%s1"; "%s2" ;"%s3"; "%s4"; "%s5"; "%s6"; "%s7";
-     "%k0" |]
+  [| "%r9"; "%r10"; "%r11"; "%r12"; "%r13"; "%r14"; "%r15"; "%r16"; "%r17";
+     "%r18"; "%r19"; "%r20"; "%r21"; "%r22"; "%r23"; "%r24"; "%r25"; "%r26";
+     "%r27"; "%r28"; "%r29"; "%r30"; "%r31" |]
 let fregs = 
-  [| "%f1"; "%f3"; "%f4"; "%f5"; "%f6"; "%f7"; "%f8"; "%f9" ; "%f10";
-     "%f11"; "%f12" ;"%f13"; "%f14"; "%f15"; "%f16"; "%f17"; "%f18"; "%f19";
-     "%f20"; "%f21"; "%f22"; "%f23"; "%f24"; "%f25"; "%f26"; "%f27"; "%f28";
-     "%f29"; "%f30"; "%f31" |]
-let reg_cl = "%k0" (* closure address (caml2html: sparcasm_regcl) *)
-let reg_sp = "%sp" (* stack pointer *)
-let reg_fp = "%fp" (* frame pointer *)
-let reg_hp = "%gp" (* heap pointer (caml2html: sparcasm_reghp) *)
-let reg_tmp = "%at" (* assembler template *)
-let reg_atmp = "%a1" (* assembler template *)
+  [| "%f5"; "%f6"; "%f7"; "%f8"; "%f9"; "%f10"; "%f11"; "%f12"; "%f13"; "%f14";
+     "%f15"; "%f16"; "%f17"; "%f18"; "%f19"; "%f20"; "%f21"; "%f22"; "%f23";
+     "%f24"; "%f25"; "%f26"; "%f27"; "%f28"; "%f29"; "%f30"; "%f31" |]
+let reg_cl = "%r6" (* closure address (caml2html: sparcasm_regcl) *)
+let reg_sp = "%r7" (* stack pointer *)
+let reg_fp = "%r8" (* frame pointer *)
+let reg_hp = "%r5" (* heap pointer (caml2html: sparcasm_reghp) *)
+let reg_tmp = "%r1" (* assembler template *)
+let reg_atmp = "%r2" (* assembler template *)
 let reg_sw = regs.(Array.length regs - 2) (* temporary for swap *)
-let reg_fsw = "%f16" (* temporary for swap *)
-let reg_ra = "%ra" (* return address *)
-let reg_rv = "%v0" (* return value *)
-let reg_frv = "%f2" (* return value *)
-let reg_zero = "%zero" (* zero register *)
+let reg_fsw = "%f4" (* temporary for swap *)
+let reg_ra = "%r4" (* return address *)
+let reg_rv = "%r3" (* return value *)
+let reg_frv = "%f3" (* return value *)
+let reg_zero = "%r0" (* zero register *)
 let reg_fz = "%f0"
 let is_reg x = (x.[0] = '%' || x = reg_hp)
 let allregs = Array.to_list regs
