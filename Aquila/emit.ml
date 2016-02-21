@@ -70,7 +70,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       let m = i land 0x7fff in
 	    emit (Printf.sprintf "\tli      %s, $%d" x n);
       emit (Printf.sprintf "\tsll     %s, %s, $%d" x x 15);
-	    emit (Printf.sprintf "\tori     %s, %s, $%d" x x m)
+	    emit (Printf.sprintf "\taddi    %s, %s, $%d" x x m)  (* check: ori *)
   | NonTail(x), SetL(Id.L(y)) -> emit (Printf.sprintf "\tli      %s, %s" x y)
   | NonTail(x), Mov(y) when x <> y ->
       if List.mem x allregs || x == reg_rv then
@@ -177,12 +177,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         g' oc (NonTail(reg_rv), exp));
       emit (Printf.sprintf "\tjr      %s" reg_ra)
   | Tail, IfEq(x, V(y), e1, e2) ->
-      g'_tail_if oc e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " x y)
+      g'_tail_if oc e2 e1 "eq"
+      (Printf.sprintf "beq     %s, %s, " x y)
   | Tail, IfEq(x, C(i), e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_tmp x i);
-      g'_tail_if oc e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
+      g'_tail_if oc e2 e1 "eq"
+      (Printf.sprintf "beq     %s, %s, " x reg_tmp)
   | Tail, IfLE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
@@ -200,12 +200,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
   | Tail, IfFLE(x, y, e1, e2) ->
       g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tble.s   %s, %s, " x y)
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " x y)
+      g'_non_tail_if oc (NonTail(z)) e2 e1 "eq"
+      (Printf.sprintf "beq     %s, %s, " x y)
   | NonTail(z), IfEq(x, C(i), e1, e2) ->
-      emit (Printf.sprintf "\tsubi    %s, %s, $%d" reg_tmp x i);
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "neq"
-      (Printf.sprintf "bne     %s, %s, " reg_tmp reg_zero)
+      emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
+      g'_non_tail_if oc (NonTail(z)) e2 e1 "eq"
+      (Printf.sprintf "beq     %s, %s, " x reg_tmp)
   | NonTail(z), IfLE(x, y', e1, e2) ->
       (match y' with
       | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
@@ -312,7 +312,7 @@ let init_sp () =
   let m = sp land 0x7fff in
 	emit (Printf.sprintf "\tli      %s, $%d" reg_sp n);
   emit (Printf.sprintf "\tsll     %s, %s, $%d" reg_sp reg_sp 15);
-	emit (Printf.sprintf "\tori     %s, %s, $%d" reg_sp reg_sp m)
+	emit (Printf.sprintf "\taddi    %s, %s, $%d" reg_sp reg_sp m) (* check: ori *)
 
 let f oc (Prog(data, fundefs, e)) =
   global_oc := oc;
