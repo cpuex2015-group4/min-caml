@@ -328,11 +328,10 @@ let f oc (Prog(data, fundefs, e)) =
   List.iter (fun fundef -> h oc fundef) fundefs;
   Printf.fprintf oc "_leml_entry: # main entry point\n";
   Printf.fprintf oc "\t# main program start\n";
-  init_sp ();
-  emit (Printf.sprintf "\tli      %s, min_caml_heap_pointer" reg_hp);
+  (* init_sp (); *)
+  (* emit (Printf.sprintf "\tli      %s, _leml_heap_pointer" reg_hp); *)
   stackset := S.empty;
   stackmap := [];
   g oc (NonTail(reg_rv), e);
   Printf.fprintf oc "\t# main program end\n";
-  emit (Printf.sprintf "\thlt");
-  Printf.fprintf oc "\nmin_caml_heap_pointer:\n"
+  emit (Printf.sprintf "\thlt")
