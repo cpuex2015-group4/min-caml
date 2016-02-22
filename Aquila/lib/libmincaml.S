@@ -1,8 +1,8 @@
 .data
 TWO:  # 2.0
-	.long 0x40000000
+	.word 0x40000000
 HALF:  # 0.5
-	.long 0x3f000000
+	.word 0x3f000000
 
 .text
 div10:
@@ -157,28 +157,28 @@ min_caml_print_hex32:
 	
 .data
 PI:  # pi
-	.long 0x40490fdb
+	.word 0x40490fdb
 D_PI:  # 2*pi
-	.long 0x40c90fdb
+	.word 0x40c90fdb
 H_PI:  # pi/2
-	.long 0x3fc90fdb
+	.word 0x3fc90fdb
 Q_PI:  # pi/4
-	.long 0x3f490fdb
+	.word 0x3f490fdb
 S3:
-	.long 0xbe2aaaac
+	.word 0xbe2aaaac
 S5:
-	.long 0x3c088666
+	.word 0x3c088666
 S7:
-	.long 0xb94d64b6
+	.word 0xb94d64b6
 S1:
 C0:
-	.long 0x3f800000
+	.word 0x3f800000
 C2:
-	.long 0xbf000000
+	.word 0xbf000000
 C4:
-	.long 0x3d2aa789
+	.word 0x3d2aa789
 C6:
-	.long 0xbab38106
+	.word 0xbab38106
 
 .text
 kernel_sin:
@@ -324,23 +324,23 @@ cos.4:
 
 .data
 ATAN_THR1:
-	.long   0x3ee00000
+	.word   0x3ee00000
 ATAN_THR2:
-	.long   0x401c0000
+	.word   0x401c0000
 AT1:
-	.long   0x3f800000
+	.word   0x3f800000
 AT3:
-	.long   0xbeaaaaaa
+	.word   0xbeaaaaaa
 AT5:
-	.long   0x3e4ccccd
+	.word   0x3e4ccccd
 AT7:
-	.long   0xbe124925
+	.word   0xbe124925
 AT9:
-	.long   0x3de38e38
+	.word   0x3de38e38
 AT11:
-	.long   0xbdb7d66e
+	.word   0xbdb7d66e
 AT13:
-	.long   0x3d75e7c5
+	.word   0x3d75e7c5
 
 .text
 kernel_atan:
@@ -431,9 +431,9 @@ fabs.1:
 
 .data
 FLOAT_THR:
-	.long   0x4b000000
+	.word   0x4b000000
 FLOAT_THRI:
-	.long   0x00800000
+	.word   0x00800000
 
 .text
 .extern min_caml_float_of_int
@@ -522,9 +522,9 @@ floor.0:
 
 .data
 SQRT_MAGIC:
-	.long   0x5f3759df
+	.word   0x5f3759df
 F1_5:
-	.long   0x3fc00000
+	.word   0x3fc00000
 
 .text
 .extern min_caml_sqrt

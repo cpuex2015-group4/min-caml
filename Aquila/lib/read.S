@@ -1,6 +1,6 @@
 .data
 BASE:
-	.long   0x3dcccccd
+	.word   0x3dcccccd
 
 .text
 .extern min_caml_read_float

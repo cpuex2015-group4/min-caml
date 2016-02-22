@@ -321,7 +321,7 @@ let f oc (Prog(data, fundefs, e)) =
   List.iter
   (fun (Id.L(x), d) ->
     Printf.fprintf oc "%s:\t# %f\n" x d;
-    Printf.fprintf oc "\t.long\t0x%lx\n" (f2bin d))
+    Printf.fprintf oc "\t.word\t0x%lx\n" (f2bin d))
   data;
   Printf.fprintf oc ".text\n";
   Printf.fprintf oc "\t.extern _leml_entry\n";
