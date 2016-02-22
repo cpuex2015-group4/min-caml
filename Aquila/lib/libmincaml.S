@@ -449,7 +449,7 @@ itof.cont:
 	li      %r1, FLOAT_THR
 	ld.s    %f31, %r1, $0
 	ld      %r18, %r1, $0
-	blt     %r9. %r18, itof.1
+	blt     %r9, %r18, itof.1
 	add.s   %f1, %f0, %f31
 	sub     %r9, %r9, %r18
 itof.0:
