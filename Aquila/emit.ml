@@ -185,16 +185,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (Printf.sprintf "beq     %s, %s, " x reg_tmp)
   | Tail, IfLE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
+      | V(y) -> g'_tail_if oc e2 e1 "nle" (Printf.sprintf "ble     %s, %s, " x y)
       | C(i) -> (
         emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
-        g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
+        g'_tail_if oc e2 e1 "nle" (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
   | Tail, IfGE(x, y', e1, e2) ->
       (match y' with
-      | V(y) -> g'_tail_if oc e1 e2 "nge" (Printf.sprintf "ble     %s, %s, " y x)
+      | V(y) -> g'_tail_if oc e2 e1 "nge" (Printf.sprintf "ble     %s, %s, " y x)
       | C(i) -> (
         emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
-        g'_tail_if oc e1 e2 "nge" (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
+        g'_tail_if oc e2 e1 "nge" (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
   | Tail, IfFEq(x, y, e1, e2) ->
       g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tbeq.s   %s, %s, " x y)
   | Tail, IfFLE(x, y, e1, e2) ->
