@@ -187,7 +187,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (match y' with
       | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
       | C(i) -> (
-        emit (Printf.sprintf "\tli      %s, $%d" reg_atmp i);
+        emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
         g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
   | Tail, IfGE(x, y', e1, e2) ->
       (match y' with
@@ -210,7 +210,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
       (match y' with
       | V(y) -> g'_tail_if oc e1 e2 "nle" (Printf.sprintf "ble     %s, %s, " x y)
       | C(i) -> (
-        emit (Printf.sprintf "\tli      %s, $%d" reg_atmp i);
+        emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
         g'_non_tail_if oc (NonTail(z)) e1 e2 "nle"
         (Printf.sprintf "ble     %s, %s, " x reg_tmp)))
   | NonTail(z), IfGE(x, y', e1, e2) ->
