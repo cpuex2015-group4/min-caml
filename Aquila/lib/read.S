@@ -3,106 +3,107 @@ BASE:
 	.long   0x3dcccccd
 
 .text
-.globl min_caml_read_float
+.extern min_caml_read_float
 min_caml_read_float:
-	move    %a0, %ra
-	move.s  %f31, %f0 # result
-	li      %t0, $0   # integral part
-	move.s  %f29, %f0 # decimal  part
-	li      %at, BASE
-	lw.s    %f28, (%at)
-	li      %t6, $0   # sign: +
+	mr      %r2, %r4
+	mr.s    %f31, %f0 # result
+	li      %r9, $0   # integral part
+	mr.s    %f29, %f0 # decimal  part
+	li      %r1, BASE
+	ld.s    %f28, %r1, $0
+	li      %r15, $0   # sign: +
 read_float.space:
-	in      %t9
-	subi    %at, %t9, $32  # ' '
-	beq     %at, %zero, read_float.space
-	subi    %at, %t9, $10  # '\n'
-	beq     %at, %zero, read_float.space
+	in      %r18
+	subi    %r1, %r18, $32  # ' '
+	beq     %r1, %r0, read_float.space
+	subi    %r1, %r18, $10  # '\n'
+	beq     %r1, %r0, read_float.space
 read_float.start:
-	subi    %at, %t9, $45  # '-'
-	bne     %at, %zero, read_float.1
-	li      %t6, $1   # sign: -
-read_float.0:
-	in      %t9
+	subi    %r1, %r18, $45  # '-'
+	beq     %r1, %r0, read_float.1
+	j       read_float.2
 read_float.1:
-	subi    %at, %t9, $46  # '.'
-	beq     %at, %zero, read_float.integral
-	li      %at, $47
-	slt     %at, %at, %t9
-	beq     %at, %zero, read_float.abort
-	li      %at, $58
-	slt     %at, %t9, %at
-	beq     %at, %zero, read_float.abort
-	subi    %t9, %t9, $48
+	li      %r15, $1   # sign: -
+read_float.0:
+	in      %r18
+read_float.2:
+	subi    %r1, %r18, $46  # '.'
+	beq     %r1, %r0, read_float.integral
+	li      %r1, $47
+	ble     %r18, %r1, read_float.abort
+	li      %r1, $58
+	ble     %r1, %r18, read_float.abort
+	subi    %r18, %r18, $48
 	# mul10 = sll3 + sll1
-	sll     %t8, %t0, $3
-	sll     %t7, %t0, $1
-	add     %t8, %t7, %t8
-	add     %t0, %t8, %t9
+	sll     %r17, %r9, $3
+	sll     %r16, %r9, $1
+	add     %r17, %r16, %r17
+	add     %r9, %r17, %r18
 	j       read_float.0
 read_float.integral:
 	jal     float_of_int
-	move.s  %f30, %f2  # integral part
+	mr.s    %f30, %f3  # integral part
 read_float.2:
-	in      %t0
-	li      %at, $47
-	slt     %at, %at, %t0
-	beq     %at, %zero, read_float.end
-	li      %at, $58
-	slt     %at, %t0, %at
-	beq     %at, %zero, read_float.end
-	subi    %t0, %t0, $48
+	in      %r9
+	li      %r1, $47
+	ble     %r9, %r1, read_float.end
+	li      %r1, $58
+	ble     %r1, %r9, read_float.end
+	subi    %r9, %r9, $48
 	jal     float_of_int
-	add.s   %f29, %f29, %f2
+	add.s   %f29, %f29, %f3
 	mul.s   %f29, %f28, %f29
 	j       read_float.2
 read_float.end:
-	add.s   %f2, %f29, %f30
+	add.s   %f3, %f29, %f30
 read_float.sign:
-	subi    %t6, %t6, $1
-	bne     %t6, %zero, read_float.end2
-	sub.s   %f2, %f0, %f2
+	subi    %r15, %r15, $1
+	beq     %r15, %r0, read_float.end2
+	j       read_float.end3
 read_float.end2:
-	move    %ra, %a0
-	jr      %ra
+	sub.s   %f3, %f0, %f3
+read_float.end3:
+	mr      %r4, %r2
+	jr      %r4
 read_float.abort:
 	jal     float_of_int
 	j       read_float.sign
 
-.globl min_caml_read_int
+.extern min_caml_read_int
 min_caml_read_int:
-	li      %v0, $0   # result
-	li      %t6, $0   # sign: +
-	li      %t8, $45  # '-'
+	li      %r3, $0   # result
+	li      %r15, $0   # sign: +
+	li      %r17, $45  # '-'
 read_int.space:
-	in      %t9
-	subi    %at, %t9, $32  # ' '
-	beq     %at, %zero, read_int.space
-	subi    %at, %t9, $10  # '\n'
-	beq     %at, %zero, read_int.space
+	in      %r18
+	subi    %r1, %r18, $32  # ' '
+	beq     %r1, %r0, read_int.space
+	subi    %r1, %r18, $10  # '\n'
+	beq     %r1, %r0, read_int.space
 read_int.start:
-	bne     %t8, %t9, read_int.1
-	li      %t6, $1   # sign: -
-read_int.0:
-	in      %t9
+	beq     %r17, %r18, read_int.1
+	j       read_int.2
 read_int.1:
-	li      %at, $47
-	slt     %at, %at, %t9
-	beq     %at, %zero, read_int.end
-	li      %at, $58
-	slt     %at, %t9, %at
-	beq     %at, %zero, read_int.end
-	subi    %t9, %t9, $48
+	li      %r15, $1   # sign: -
+read_int.0:
+	in      %r18
+read_int.2:
+	li      %r1, $47
+	ble     %r18, %r1, read_int.end
+	li      %r1, $58
+	ble     %r1, %r18, read_int.end
+	subi    %r18, %r18, $48
 	# mul10 = sll3 + sll1
-	sll     %t8, %v0, $3
-	sll     %t7, %v0, $1
-	add     %t8, %t7, %t8
-	add     %v0, %t8, %t9
+	sll     %r17, %r3, $3
+	sll     %r16, %r3, $1
+	add     %r17, %r16, %r17
+	add     %r3, %r17, %r18
 	j       read_int.0
 read_int.end:
-	subi    %t6, %t6, $1
-	bne     %t6, %zero, read_int.end2
-	sub     %v0, %zero, %v0
+	subi    %r15, %r15, $1
+	beq     %r15, %r0, read_int.end2
+	jr      %r4
+	sub     %r3, %r0, %r3
 read_int.end2:
-	jr      %ra
+	jr      %r4
 

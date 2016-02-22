@@ -4,188 +4,156 @@ TWO:  # 2.0
 HALF:  # 0.5
 	.long 0x3f000000
 
-# Reference:
-# http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
-# http://www.piclist.com/techref/language/ccpp/convertbase.htm
 .text
-#div10:
-#	# calculate "approximate" int(A/10)
-#	# result will be either A/10 or (A+1)/10
-#	sw      %t0, -1(%sp)
-#div10.0:
-#	srl     %v0, %t0, $1
-#	add     %v0, %v0, %t0
-#	addi    %v0, %v0, $1
-#	srl     %v0, %v0, $1
-#	srl     %at, %v0, $4
-#	add     %v0, %v0, %at
-#	srl     %at, %v0, $8
-#	add     %v0, %v0, %at
-#	srl     %at, %v0, $16
-#	add     %v0, %v0, %at
-#	srl     %v0, %v0, $3
-#	lw      %t0, -1(%sp)
-#	# if result = (A+1)/10 then re-calculate
-#	sll     %t9, %v0, $3
-#	sll     %t8, %v0, $1
-#	add     %t9, %t9, %t8
-#	sub     %t9, %t0, %t9
-#	slti    %at, %t9, $10
-#	bne     %at, %zero, div10.1
-#	addi    %t0, %t0, $1
-#	j       div10.0
-#div10.1:
-#	jr      %ra
 div10:
-	move    %t1, %t0
-	li      %v0, $0
+	mr      %r10, %r9
+	li      %r3, $0
 div10.1:
-	slti    %at, %t1, $10000
-	bne     %at, %zero, div10.2
-	subi    %t1, %t1, $10000
-	addi    %v0, %v0, $1000
+	li      %r1, $10000
+	blt     %r10, %r1, div10.2
+	subi    %r10, %r10, $10000
+	addi    %r3, %r3, $1000
 	j       div10.1
 div10.2:
-	slti    %at, %t1, $1000
-	bne     %at, %zero, div10.3
-	subi    %t1, %t1, $1000
-	addi    %v0, %v0, $100
+	li      %r1, $1000
+	blt     %r10, %r1, div10.3
+	subi    %r10, %r10, $1000
+	addi    %r3, %r3, $100
 	j       div10.2
 div10.3:
-	slti    %at, %t1, $100
-	bne     %at, %zero, div10.4
-	subi    %t1, %t1, $100
-	addi    %v0, %v0, $10
+	li      %r1, $100
+	blt     %r10, %r1, div10.4
+	subi    %r10, %r10, $100
+	addi    %r3, %r3, $10
 	j       div10.3
 div10.4:
-	slti    %at, %t1, $10
-	bne     %at, %zero, div10.5
-	subi    %t1, %t1, $10
-	addi    %v0, %v0, $1
+	li      %r1, $10
+	blt     %r10, %r1, div10.5
+	subi    %r10, %r10, $10
+	addi    %r3, %r3, $1
 	j       div10.3
 div10.5:
-	jr      %ra
+	jr      %r4
 
-.globl min_caml_print_char
+.extern min_caml_print_char
 min_caml_print_char:
-	out     %t0
-	jr      %ra
+	out     %r9
+	jr      %r4
 
-.globl min_caml_print_newline
+.extern min_caml_print_newline
 min_caml_print_newline:
-	li      %at, $10
-	out     %at
-	jr      %ra
+	li      %r1, $10
+	out     %r1
+	jr      %r4
 
-.globl min_caml_print_int
+.extern min_caml_print_int
 min_caml_print_int:
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
-	slt     %at, %t0, %zero
-	beq     %at, %zero, print_int_neg.0
-	li      %t9, $45  # '-'
-	out     %t9
-	sub     %t0, %zero, %t0
+	subi    %r7, %r7, $1
+	st      %r4, %r7, $0
+	ble     %r0, %r9, print_int_neg.0
+	li      %r18, $45  # '-'
+	out     %r18
+	sub     %r9, %r0, %r9
 print_int_neg.0:
-	beq     %t0, %zero, print_int.0
+	beq     %r9, %r0, print_int.0
 	jal     print_int.1
 	j       print_int.end
 print_int.1:
-	subi    %sp, %sp, $1
-	sw      %ra, (%sp)
-	beq     %t0, %zero, print_int.2
+	subi    %r7, %r7, $1
+	st      %r4, %r7, $0
+	beq     %r9, %r0, print_int.2
 	jal     div10
 	# mul10 = sll3 + sll1
-	sll     %t9, %v0, $3
-	sll     %t8, %v0, $1
-	add     %t9, %t9, %t8
-	sub     %t9, %t0, %t9
-	addi    %t9, %t9, $48
-	sw      %t9, -1(%sp)
-	sw      %ra, -2(%sp)
-	subi    %sp, %sp, $2
-	move    %t0, %v0
+	sll     %r18, %r3, $3
+	sll     %r17, %r3, $1
+	add     %r18, %r18, %r17
+	sub     %r18, %r9, %r18
+	addi    %r18, %r18, $48
+	st      %r18, %r7, $-1
+	st      %r4, %r7, $-2
+	subi    %r7, %r7, $2
+	mr      %r9, %r3
 	jal     print_int.1
-	addi    %sp, %sp, $2
-	lw      %ra, -2(%sp)
-	lw      %t9, -1(%sp)
-	out     %t9
+	addi    %r7, %r7, $2
+	ld      %r4, %r7, $-2
+	ld      %r18, %r7, $-1
+	out     %r18
 print_int.2:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
-	jr      %ra
+	ld      %r4, %r7, $0
+	addi    %r7, %r7, $1
+	jr      %r4
 print_int.0:
-	addi    %t0, %t0, $48
-	out     %t0
+	addi    %r9, %r9, $48
+	out     %r9
 print_int.end:
-	lw      %ra, (%sp)
-	addi    %sp, %sp, $1
-	jr      %ra
+	ld      %r4, %r7, $0
+	addi    %r7, %r7, $1
+	jr      %r4
 
 .text
-.globl min_caml_print_float
+.extern min_caml_print_float
 min_caml_print_float:
-	move    %a0, %ra
-	addi    %gp, %gp, $1
-	sw.s    %f1, -1(%gp)
-	lw      %t0, -1(%gp)
-	move    %t9, %t0
-	srl     %t0, %t0, $28
+	mr      %r2, %r4
+	addi    %r5, %r5, $1
+	st.s    %f1, %r5, $-1
+	ld      %r9, %r5, $-1
+	mr      %r18, %r9
+	srl     %r9, %r9, $28
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $24
+	srl     %r9, %r18, $24
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $20
+	srl     %r9, %r18, $20
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $16
+	srl     %r9, %r18, $16
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $12
+	srl     %r9, %r18, $12
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $8
+	srl     %r9, %r18, $8
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $4
+	srl     %r9, %r18, $4
 	jal     min_caml_print_hex4
-	move    %t0, %t9
+	mr      %r9, %r18
 	jal     min_caml_print_hex4
 	jal     min_caml_print_newline
-	move    %ra, %a0
-	jr      %ra
+	mr      %r4, %r2
+	jr      %r4
 
-.globl min_caml_print_hex4
-min_caml_print_hex4:
-	andi    %t0, %t0, $15
-	slti    %at, %t0, $10
-	beq     %at, %zero, ph8.0
-	addi    %t0, %t0, $48
-	j       ph8.1
-ph8.0:
-	addi    %t0, %t0, $55
-ph8.1:
-	out     %t0
-	jr      %ra
+#.extern min_caml_print_hex4
+#min_caml_print_hex4:
+#	andi    %r9, %r9, $15
+#	slti    %r1, %r9, $10
+#	beq     %r1, %r0, ph8.0
+#	addi    %r9, %r9, $48
+#	j       ph8.1
+#ph8.0:
+#	addi    %r9, %r9, $55
+#ph8.1:
+#	out     %r9
+#	jr      %r4
 
-.globl min_caml_print_hex32
+.extern min_caml_print_hex32
 min_caml_print_hex32:
-	move    %a0, %ra
-	move    %t9, %t0
-	srl     %t0, %t0, $28
+	mr      %r2, %r4
+	mr      %r18, %r9
+	srl     %r9, %r9, $28
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $24
+	srl     %r9, %r18, $24
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $20
+	srl     %r9, %r18, $20
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $16
+	srl     %r9, %r18, $16
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $12
+	srl     %r9, %r18, $12
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $8
+	srl     %r9, %r18, $8
 	jal     min_caml_print_hex4
-	srl     %t0, %t9, $4
+	srl     %r9, %r18, $4
 	jal     min_caml_print_hex4
-	move    %t0, %t9
+	mr      %r9, %r18
 	jal     min_caml_print_hex4
 	jal     min_caml_print_newline
-	move    %ra, %a0
-	jr      %ra
+	mr      %r4, %r2
+	jr      %r4
 	
 .data
 PI:  # pi
@@ -215,154 +183,144 @@ C6:
 .text
 kernel_sin:
 	mul.s   %f30, %f1, %f1
-	li      %at, S7
-	lw.s    %f2, (%at)
-	li      %at, S5
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, S3
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, S1
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	mul.s   %f2, %f2, %f1
-	jr      %ra
+	li      %r1, S7
+	ld.s    %f3, %r1, $0
+	li      %r1, S5
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, S3
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, S1
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	mul.s   %f3, %f3, %f1
+	jr      %r4
 
 kernel_cos:
 	mul.s   %f30, %f1, %f1
-	li      %at, C6
-	lw.s    %f2, (%at)
-	li      %at, C4
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, C2
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, C0
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	jr      %ra
+	li      %r1, C6
+	ld.s    %f3, %r1, $0
+	li      %r1, C4
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, C2
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, C0
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	jr      %r4
 
 reduction:
-	li      %at, D_PI
-	lw.s    %f31, (%at)
-	move.s  %f30, %f31
+	li      %r1, D_PI
+	ld.s    %f31, %r1, $0
+	mr.s    %f30, %f31
 reduction.0:
-	c.le.s  %f31, %f1
-	bclf    reduction.1
-	li      %at, TWO
-	lw.s    %f29, (%at)
+	blt.s   %f1, %f31, reduction.1
+	li      %r1, TWO
+	ld.s    %f29, %r1, $0
 	mul.s   %f31, %f31, %f29
 	j       reduction.0
 reduction.1:
-	li      %at, HALF
-	lw.s    %f29, (%at)
+	li      %r1, HALF
+	ld.s    %f29, %r1, $0
 reduction.2:
-	c.le.s  %f30, %f1
-	bclf    reduction.3
-	c.le.s  %f31, %f1
-	bclf    reduction.4
+	blt.s   %f1, %f30, reduction.3
+	blt.s   %f1, %f31, reduction.4
 	sub.s   %f1, %f1, %f31
 reduction.4:
 	mul.s   %f31, %f31, %f29
 	j       reduction.2
 reduction.3:
-	move.s  %f2, %f1
-	jr      %ra
+	mr.s    %f3, %f1
+	jr      %r4
 
-.globl min_caml_sin
+.extern min_caml_sin
 min_caml_sin:
-	li      %t1, $1
-	c.le.s  %f1, %zero
-	bclt    sin_neg.0
-	li      %t2, $0
+	li      %r10, $1
+	ble.s   %f1, %f0, sin_neg.0
+	li      %r11, $0
 	j       sin_neg.1
 sin_neg.0:
-	li      %t2, $1
+	li      %r11, $1
 sin_neg.1:
-	move    %a0, %ra
+	mr      %r2, %r4
 	jal     min_caml_fabs
-	move.s  %f1, %f2
+	mr.s    %f1, %f3
 	# [sin] reduction-I
 	jal     reduction
-	move.s  %f1, %f2
+	mr.s    %f1, %f3
 	# [sin] reduction-II
-	li      %at, PI
-	lw.s    %f31, (%at)
-	c.le.s  %f31, %f1
-	bclf    sin.0
+	li      %r1, PI
+	ld.s    %f31, %r1, $0
+	blt.s   %f1, %f31, sin.0
 	sub.s   %f1, %f1, %f31
-	sub     %t2, %t1, %t2
+	sub     %r11, %r10, %r11
 sin.0:
-	li      %at, H_PI
-	lw.s    %f30, (%at)
-	c.le.s  %f30, %f1
-	bclf    sin.1
+	li      %r1, H_PI
+	ld.s    %f30, %r1, $0
+	blt.s   %f1, %f30, sin.1
 	sub.s   %f1, %f31, %f1
 sin.1:
-	li      %at, Q_PI
-	lw.s    %f31, (%at)
-	c.le.s  %f1, %f31
-	bclf    sin.2
+	li      %r1, Q_PI
+	ld.s    %f31, %r1, $0
+	blt.s   %f31, %f1, sin.2
 	jal     kernel_sin
 	j       sin.3
 sin.2:
 	sub.s   %f1, %f30, %f1
 	jal     kernel_cos
 sin.3:
-	beq     %t2, %zero, sin.4
-	sub.s   %f2, %f0, %f2
+	beq     %r11, %r0, sin.4
+	sub.s   %f3, %f0, %f3
 sin.4:
-	move    %ra, %a0
-	jr      %ra
+	mr      %r4, %r2
+	jr      %r4
 
-.globl min_caml_cos
+.extern min_caml_cos
 min_caml_cos:
-	li      %t1, $1
-	li      %t2, $0  # sign
-	move    %a0, %ra
+	li      %r10, $1
+	li      %r11, $0  # sign
+	mr      %r2, %r4
 	jal     min_caml_fabs
-	move.s  %f1, %f2
+	mr.s    %f1, %f3
 	# [cos] reduction-I
 	jal     reduction
-	move.s  %f1, %f2
+	mr.s    %f1, %f3
 	# [cos] reduction-II
-	li      %at, PI
-	lw.s    %f31, (%at)
-	c.le.s  %f31, %f1
-	bclf    cos.0
+	li      %r1, PI
+	ld.s    %f31, %r1, $0
+	blt.s   %f1, %f31, cos.0
 	sub.s   %f1, %f1, %f31
-	sub     %t2, %t1, %t2
+	sub     %r11, %r10, %r11
 cos.0:
-	li      %at, H_PI
-	lw.s    %f30, (%at)
-	c.le.s  %f30, %f1
-	bclf    cos.1
+	li      %r1, H_PI
+	ld.s    %f30, %r1, $0
+	blt.s   %f1, %f30, cos.1
 	sub.s   %f1, %f31, %f1
-	sub     %t2, %t1, %t2
+	sub     %r11, %r10, %r11
 cos.1:
-	li      %at, Q_PI
-	lw.s    %f31, (%at)
-	c.le.s  %f1, %f31
-	bclf    cos.2
+	li      %r1, Q_PI
+	ld.s    %f31, %r1, $0
+	blt.s   %f31, %f1, cos.2
 	jal     kernel_cos
 	j       cos.3
 cos.2:
 	sub.s   %f1, %f30, %f1
 	jal     kernel_sin
 cos.3:
-	beq     %t2, %zero, cos.4
-	sub.s   %f2, %f0, %f2
+	beq     %r11, %r0, cos.4
+	sub.s   %f3, %f0, %f3
 cos.4:
-	move    %ra, %a0
-	jr      %ra
+	mr      %r4, %r2
+	jr      %r4
 
 .data
 ATAN_THR1:
@@ -387,93 +345,89 @@ AT13:
 .text
 kernel_atan:
 	mul.s   %f30, %f1, %f1
-	li      %at, AT13
-	lw.s    %f2, (%at)
-	li      %at, AT11
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, AT9
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, AT7
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, AT5
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, AT3
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	li      %at, AT1
-	lw.s    %f31, (%at)
-	mul.s   %f2, %f2, %f30
-	add.s   %f2, %f2, %f31
-	mul.s   %f2, %f2, %f1
-	jr      %ra
+	li      %r1, AT13
+	ld.s    %f3, %r1, $0
+	li      %r1, AT11
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, AT9
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, AT7
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, AT5
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, AT3
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	li      %r1, AT1
+	ld.s    %f31, %r1, $0
+	mul.s   %f3, %f3, %f30
+	add.s   %f3, %f3, %f31
+	mul.s   %f3, %f3, %f1
+	jr      %r4
 
-.globl min_caml_atan
+.extern min_caml_atan
 min_caml_atan:
-	move    %a0, %ra
-	c.le.s  %f1, %zero
-	bclt    atan_neg.0
-	li      %t2, $0
+	mr      %r2, %r4
+	ble.s   %f1, %f0, atan_neg.0
+	li      %r11, $0
 	j       atan_neg.1
 atan_neg.0:
-	li      %t2, $1
+	li      %r11, $1
 	sub.s   %f1, %f0, %f1
 atan_neg.1:
 	# [atan] reduction
-	li      %at, ATAN_THR1
-	lw.s    %f31, (%at)
-	c.lt.s  %f1, %f31
-	bclf    atan.0
+	li      %r1, ATAN_THR1
+	ld.s    %f31, %r1, $0
+	ble.s   %f31, %f1, atan.0
 	jal     kernel_atan
 	j       atan.2
 atan.0:
-	li      %at, ATAN_THR2
-	lw.s    %f31, (%at)
-	c.lt.s  %f1, %f31
-	bclf    atan.1
-	li      %at, AT1
-	lw.s    %f30, (%at)
+	li      %r1, ATAN_THR2
+	ld.s    %f31, %r1, $0
+	ble.s   %f31, %f1, atan.1
+	li      %r1, AT1
+	ld.s    %f30, %r1, $0
 	add.s   %f31, %f1, %f30
 	inv.s   %f31, %f31
 	sub.s   %f1, %f1, %f30
 	mul.s   %f1, %f1, %f31
 	jal     kernel_atan
-	li      %at, Q_PI
-	lw.s    %f31, (%at)
-	add.s   %f2, %f2, %f31
+	li      %r1, Q_PI
+	ld.s    %f31, %r1, $0
+	add.s   %f3, %f3, %f31
 	j       atan.2
 atan.1:
 	inv.s   %f1, %f1
 	jal     kernel_atan
-	li      %at, H_PI
-	lw.s    %f31, (%at)
-	sub.s   %f2, %f31, %f2
+	li      %r1, H_PI
+	ld.s    %f31, %r1, $0
+	sub.s   %f3, %f31, %f3
 atan.2:
-	beq     %t2, %zero, atan.3
-	sub.s   %f2, %f0, %f2
+	beq     %r11, %r0, atan.3
+	sub.s   %f3, %f0, %f3
 atan.3:
-	move    %ra, %a0
-	jr      %ra
+	mr      %r4, %r2
+	jr      %r4
 
 .text
-.globl min_caml_fabs
-.globl min_caml_abs_float
+.extern min_caml_fabs
+.extern min_caml_abs_float
 min_caml_abs_float:
 min_caml_fabs:
-	c.lt.s  %f0, %f1
-	bclt    fabs.1
+	blt.s   %f0, %f1, fabs.1
 	sub.s   %f1, %f0, %f1
 fabs.1:
-	move.s  %f2, %f1
-	jr      %ra
+	mr.s    %f3, %f1
+	jr      %r4
 
 .data
 FLOAT_THR:
@@ -482,95 +436,89 @@ FLOAT_THRI:
 	.long   0x00800000
 
 .text
-.globl min_caml_float_of_int
+.extern min_caml_float_of_int
 float_of_int:
-# CAUTION: DO NOT TOUCH %ra !!
+# CAUTION: DO NOT TOUCH %r4 !!
 min_caml_float_of_int:
-	li      %t8, $0
-	slt     %at, %t0, %zero
-	beq     %at, %zero, itof.cont
-	addi    %t8, %t8, $1
-	sub     %t0, %zero, %t0
+	li      %r17, $0
+	ble     %r0, %r9, itof.cont
+	addi    %r17, %r17, $1
+	sub     %r9, %r0, %r9
 itof.cont:
-	li      %at, FLOAT_THR
-	lw.s    %f31, (%at)
-	lw      %t9, (%at)
-	slt     %at, %t0, %t9
-	bne     %at, %zero, itof.1
+	li      %r1, FLOAT_THR
+	ld.s    %f31, %r1, $0
+	ld      %r18, %r1, $0
+	blt     %r9. %r18, itof.1
 	add.s   %f1, %f0, %f31
-	sub     %t0, %t0, %t9
+	sub     %r9, %r9, %r18
 itof.0:
-	slt     %at, %t0, %t9
-	bne     %at, %zero, itof.1
+	blt     %r9, %r18, itof.1
 	add.s   %f1, %f1, %f31
-	sub     %t0, %t0, %t9
+	sub     %r9, %r9, %r18
 	j       itof.0
 itof.1:
-	add     %t0, %t0, %t9
-	move    %at, %gp
-	addi    %gp, %gp, $1
-	sw      %t0, (%at)
-	lw.s    %f1, (%at)
-	sub.s   %f2, %f1, %f31
-	beq     %t8, %zero, itof.2
-	sub.s   %f2, %f0, %f2
+	add     %r9, %r9, %r18
+	mr      %r1, %r5
+	addi    %r5, %r5, $1
+	st      %r9, %r1, $0
+	ld.s    %f1, %r1, $0
+	sub.s   %f3, %f1, %f31
+	beq     %r17, %r0, itof.2
+	sub.s   %f3, %f0, %f3
 itof.2:
-	jr      %ra
+	jr      %r4
 
 .text
-.globl min_caml_truncate
+.extern min_caml_truncate
 min_caml_truncate:
-.globl min_caml_int_of_float
-# CAUTION: DO NOT TOUCH %ra !!
+.extern min_caml_int_of_float
+# CAUTION: DO NOT TOUCH %r4 !!
 min_caml_int_of_float:
-	li      %t6, $0
-	c.lt.s  %f1, %f0
-	bclf    ftoi.cont
-	addi    %t6, %t6, $1
+	li      %r15, $0
+	ble.s   %f0, %f1, ftoi.cont
+	addi    %r15, %r15, $1
 	sub.s   %f1, %f0, %f1
 ftoi.cont:
-	li      %at, FLOAT_THR
-	lw.s    %f31, (%at)
-	lw      %t9, (%at)
-	li      %at, FLOAT_THRI
-	lw      %t8, (%at)
-	li      %t7, $0
+	li      %r1, FLOAT_THR
+	ld.s    %f31, %r1, $0
+	ld      %r18, %r1, $0
+	li      %r1, FLOAT_THRI
+	ld      %r17, %r1, $0
+	li      %r16, $0
 ftoi.0:
-	c.lt.s  %f1, %f31
-	bclt    ftoi.1
+	blt.s   %f1, %f31, ftoi.1
 	sub.s   %f1, %f1, %f31
-	add     %t7, %t7, %t8
+	add     %r16, %r16, %r17
 	j       ftoi.0
 ftoi.1:
 	add.s   %f1, %f1, %f31
-	move    %at, %gp
-	addi    %gp, %gp, $1
-	sw.s    %f1, (%at)
-	lw      %v0, (%at)
-	sub     %v0, %v0, %t9
-	add     %v0, %v0, %t7
-	beq     %t6, %zero, ftoi.2
-	sub     %v0, %zero, %v0
+	mr      %r1, %r5
+	addi    %r5, %r5, $1
+	st.s    %f1, %r1, $0
+	ld      %r3, %r1, $0
+	sub     %r3, %r3, %r18
+	add     %r3, %r3, %r16
+	beq     %r15, %r0, ftoi.2
+	sub     %r3, %r0, %r3
 ftoi.2:
-	jr      %ra
+	jr      %r4
 
 .text
-.globl min_caml_floor
+.extern min_caml_floor
 min_caml_floor:
-	li      %at, FLOAT_THR
-	lw.s    %f31, (%at)
-	c.lt.s  %f1, %f31
-	bclf    floor.0
-	li      %at, HALF
-	lw.s    %f31, (%at)
+	li      %r1, FLOAT_THR
+	ld.s    %f31, %r1, $0
+	ble.s   %f31, %f1, floor.0
+	li      %r1, HALF
+	ld.s    %f31, %r1, $0
 	sub.s   %f1, %f1, %f31
-	move    %a0, %ra
+	mr      %r2, %r4
 	jal     min_caml_int_of_float
-	move    %t0, %v0
+	mr      %r9, %r3
 	jal     min_caml_float_of_int
-	move    %ra, %a0
+	mr      %r4, %r2
 floor.0:
-	jr      %ra
+	jr      %r4
 
 .data
 SQRT_MAGIC:
@@ -579,74 +527,73 @@ F1_5:
 	.long   0x3fc00000
 
 .text
-.globl min_caml_sqrt
+.extern min_caml_sqrt
 min_caml_sqrt:
-	c.eq.s  %f1, %f0
-	bclt    sqrt.zero
-	li      %at, SQRT_MAGIC
-	lw      %t9, (%at)
-	li      %at, F1_5
-	lw.s    %f30, (%at)
-	li      %at, HALF
-	lw.s    %f29, (%at)
+	beq.s   %f1, %f0, sqrt.r0
+	li      %r1, SQRT_MAGIC
+	ld      %r18, %r1, $0
+	li      %r1, F1_5
+	ld.s    %f30, %r1, $0
+	li      %r1, HALF
+	ld.s    %f29, %r1, $0
 	# fast inverse square root
-	sw.s    %f1, (%gp)
-	lw      %at, (%gp)
-	srl     %at, %at, $1
-	sub     %at, %t9, %at
-	sw      %at, (%gp)
-	lw.s    %f2, (%gp)
+	st.s    %f1, %r5, $0
+	ld      %r1, %r5, $0
+	srl     %r1, %r1, $1
+	sub     %r1, %r18, %r1
+	st      %r1, %r5, $0
+	ld.s    %f3, %r5, $0
 	# iteration 1
-	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f3, %f3
 	mul.s   %f28, %f28, %f29
 	mul.s   %f28, %f28, %f1
 	sub.s   %f28, %f30, %f28
-	mul.s   %f2, %f2, %f28
+	mul.s   %f3, %f3, %f28
 	# iteration 2
-	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f3, %f3
 	mul.s   %f28, %f28, %f29
 	mul.s   %f28, %f28, %f1
 	sub.s   %f28, %f30, %f28
-	mul.s   %f2, %f2, %f28
+	mul.s   %f3, %f3, %f28
 	# iteration 3
-	mul.s   %f28, %f2, %f2
+	mul.s   %f28, %f3, %f3
 	mul.s   %f28, %f28, %f29
 	mul.s   %f28, %f28, %f1
 	sub.s   %f28, %f30, %f28
-	mul.s   %f2, %f2, %f28
+	mul.s   %f3, %f3, %f28
 	# get sqrt from inverse sqrt
-	mul.s   %f2, %f2, %f1
-	jr      %ra
-sqrt.zero:
-	move.s  %f2, %f0
-	jr      %ra
+	mul.s   %f3, %f3, %f1
+	jr      %r4
+sqrt.r0:
+	mr.s    %f3, %f0
+	jr      %r4
 
 .text
-.globl min_caml_create_array
+.extern min_caml_create_array
 min_caml_create_array:
-	move    %t9, %gp
-	move    %v0, %gp
-	add     %gp, %gp, %t0
+	mr      %r18, %r5
+	mr      %r3, %r5
+	add     %r5, %r5, %r9
 create_array.0:
-	beq     %t0, %zero, create_array.1
-	sw      %t1, (%t9)
-	addi    %t9, %t9, $1
-	subi    %t0, %t0, $1
+	beq     %r9, %r0, create_array.1
+	st      %r10, %r18, $0
+	addi    %r18, %r18, $1
+	subi    %r9, %r9, $1
 	j       create_array.0
 create_array.1:
-	jr      %ra
+	jr      %r4
 
 .text
-.globl min_caml_create_float_array
+.extern min_caml_create_float_array
 min_caml_create_float_array:
-	move    %t9, %gp
-	move    %v0, %gp
-	add     %gp, %gp, %t0
+	mr      %r18, %r5
+	mr      %r3, %r5
+	add     %r5, %r5, %r9
 create_float_array.0:
-	beq     %t0, %zero, create_float_array.1
-	sw.s    %f1, (%t9)
-	addi    %t9, %t9, $1
-	subi    %t0, %t0, $1
+	beq     %r9, %r0, create_float_array.1
+	st.s    %f1, %r18, $0
+	addi    %r18, %r18, $1
+	subi    %r9, %r9, $1
 	j       create_float_array.0
 create_float_array.1:
-	jr      %ra
+	jr      %r4
