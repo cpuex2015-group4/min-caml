@@ -118,18 +118,19 @@ min_caml_print_float:
 	mr      %r4, %r2
 	jr      %r4
 
-#.extern min_caml_print_hex4
-#min_caml_print_hex4:
-#	andi    %r9, %r9, $15
-#	slti    %r1, %r9, $10
-#	beq     %r1, %r0, ph8.0
-#	addi    %r9, %r9, $48
-#	j       ph8.1
-#ph8.0:
-#	addi    %r9, %r9, $55
-#ph8.1:
-#	out     %r9
-#	jr      %r4
+.extern min_caml_print_hex4
+min_caml_print_hex4:
+	sll     %r9, %r9, $17
+	srl     %r9, %r9, $17
+	li      %r1, $10
+	ble     %r1, %r9, ph8.0
+	addi    %r9, %r9, $48
+	j       ph8.1
+ph8.0:
+	addi    %r9, %r9, $55
+ph8.1:
+	out     %r9
+	jr      %r4
 
 .extern min_caml_print_hex32
 min_caml_print_hex32:
