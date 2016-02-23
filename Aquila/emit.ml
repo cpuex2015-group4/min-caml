@@ -4,15 +4,15 @@ let pc = ref 0
 let global_oc = ref stdout
 
 let emit s =
-  Printf.fprintf (!global_oc) "%s\n" s
   (*
+  Printf.fprintf (!global_oc) "%s\n" s
+  *)
   (try
     let _ = String.index s '#' in
     Printf.fprintf (!global_oc) "%s  %d\n" s !pc;
   with Not_found ->
     Printf.fprintf (!global_oc) "%s  # %d\n" s !pc);
   pc := !pc + 1
-  *)
 
 external f2bin : float -> int32 = "f2bin"
 
@@ -196,9 +196,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         emit (Printf.sprintf "\tli      %s, $%d" reg_tmp i);
         g'_tail_if oc e2 e1 "nge" (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
   | Tail, IfFEq(x, y, e1, e2) ->
-      g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tbeq.s   %s, %s, " x y)
+      g'_tail_if oc e2 e1 "bclt" (Printf.sprintf "\tbeq.s   %s, %s, " x y)
   | Tail, IfFLE(x, y, e1, e2) ->
-      g'_tail_if oc e1 e2 "bclt" (Printf.sprintf "\tble.s   %s, %s, " x y)
+      g'_tail_if oc e2 e1 "bclt" (Printf.sprintf "\tble.s   %s, %s, " x y)
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       g'_non_tail_if oc (NonTail(z)) e2 e1 "eq"
       (Printf.sprintf "beq     %s, %s, " x y)
@@ -221,10 +221,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
         g'_non_tail_if oc (NonTail(z)) e2 e1 "nge"
         (Printf.sprintf "ble     %s, %s, " reg_tmp x)))
   | NonTail(z), IfFEq(x, y, e1, e2) ->
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt"
+      g'_non_tail_if oc (NonTail(z)) e2 e1 "bclt"
       (Printf.sprintf "\tbeq.s   %s, %s, " x y)
   | NonTail(z), IfFLE(x, y, e1, e2) ->
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bclt"
+      g'_non_tail_if oc (NonTail(z)) e2 e1 "bclt"
       (Printf.sprintf "\tble.s   %s, %s, " x y)
   (* 関数呼び出しの仮想命令の実装 (caml2html: emit_call) *)
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
