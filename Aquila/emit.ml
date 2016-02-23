@@ -125,7 +125,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprime) *)
          emit (Printf.sprintf "\tld      %%t0, %s, $0"reg_atmp))
   | NonTail(x), FMovD(y) -> ()
   | NonTail(x), FNegD(y) ->
-      emit (Printf.sprintf "\tsub.s   %s, %s, %s" x reg_zero y)
+      emit (Printf.sprintf "\tsub.s   %s, %s, %s" x reg_fz y)
   | NonTail(x), FAddD(y, z) ->
       emit (Printf.sprintf "\tadd.s   %s, %s, %s" x y z)
   | NonTail(x), FSubD(y, z) ->
