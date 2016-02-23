@@ -103,7 +103,7 @@ read_int.end:
 	subi    %r15, %r15, $1
 	beq     %r15, %r0, read_int.end2
 	jr      %r4
-	sub     %r3, %r0, %r3
 read_int.end2:
+	sub     %r3, %r0, %r3
 	jr      %r4
 
